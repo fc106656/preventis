@@ -2,7 +2,7 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DataModeBadge } from '../../../src/components/DataModeToggle';
+import { DataModeBadge } from '../../src/components/DataModeToggle';
 
 const colors = {
   background: '#0D1117',
