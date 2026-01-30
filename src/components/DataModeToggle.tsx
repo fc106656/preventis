@@ -147,7 +147,7 @@ export function DataModeCard() {
         <View style={styles.apiInfo}>
           <Ionicons name="link" size={14} color={colors.textMuted} />
           <Text style={styles.apiInfoText}>
-            api-preventis.clementfaux.fr
+            api-preventis.stark-server.fr
           </Text>
         </View>
       )}
