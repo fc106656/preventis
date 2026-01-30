@@ -6,11 +6,11 @@ import { useAuth } from '../src/context/AuthContext';
 import { colors } from '../src/theme/colors';
 
 export default function Index() {
-  const { isDemo } = useDataMode();
+  const { isDemo, isInitialized } = useDataMode();
   const { isAuthenticated, loading } = useAuth();
 
-  // Attendre que l'auth soit chargé
-  if (loading) {
+  // Attendre que l'auth et le mode soient chargés avant de rediriger
+  if (loading || !isInitialized) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color={colors.primary} />

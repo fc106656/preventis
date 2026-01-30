@@ -10,6 +10,7 @@ interface DataModeContextType {
   isDemo: boolean;
   isReal: boolean;
   toggleMode: () => void;
+  isInitialized: boolean;
 }
 
 const DataModeContext = createContext<DataModeContextType | undefined>(undefined);
@@ -45,14 +46,18 @@ export function DataModeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isInitialized) return;
     
-    if (!isAuthenticated && mode === 'real') {
-      // Si on se déconnecte et qu'on est en mode réel, passer en mode démo
-      setModeState('demo');
-      AsyncStorage.setItem(STORAGE_KEY, 'demo');
-    }
+    // Utiliser une fonction pour lire le mode actuel sans dépendre de mode dans les dépendances
+    setModeState((currentMode) => {
+      if (!isAuthenticated && currentMode === 'real') {
+        // Si on se déconnecte et qu'on est en mode réel, passer en mode démo
+        AsyncStorage.setItem(STORAGE_KEY, 'demo');
+        return 'demo';
+      }
+      return currentMode;
+    });
     // On ne force PAS le passage en mode réel lors de la connexion
     // L'utilisateur peut rester en mode démo même connecté s'il le souhaite
-  }, [isAuthenticated, isInitialized, mode]);
+  }, [isAuthenticated, isInitialized]);
 
   // Sauvegarder le mode quand il change
   const setMode = (newMode: DataMode) => {
@@ -72,6 +77,7 @@ export function DataModeProvider({ children }: { children: React.ReactNode }) {
         isDemo: mode === 'demo',
         isReal: mode === 'real',
         toggleMode,
+        isInitialized,
       }}
     >
       {children}
