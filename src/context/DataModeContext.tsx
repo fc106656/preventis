@@ -39,10 +39,8 @@ export function DataModeProvider({ children }: { children: React.ReactNode }) {
     setMode(mode === 'demo' ? 'real' : 'demo');
   };
 
-  if (!isLoaded) {
-    return null; // Ou un loader
-  }
-
+  // Toujours rendre le provider, même pendant le chargement
+  // Le mode par défaut est 'demo' donc c'est safe
   return (
     <DataModeContext.Provider
       value={{

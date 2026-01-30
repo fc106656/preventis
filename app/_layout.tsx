@@ -13,18 +13,20 @@ function NavigationHandler() {
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return; // Attendre le chargement de l'auth
-
-    const inAuthGroup = segments[0] === 'login';
-    const inTabsGroup = segments[0] === '(tabs)';
-
-    // En mode démo, toujours permettre l'accès aux tabs
+    // En mode démo, toujours permettre l'accès aux tabs (pas besoin d'attendre l'auth)
     if (isDemo) {
+      const inTabsGroup = segments[0] === '(tabs)';
       if (!inTabsGroup) {
         router.replace('/(tabs)');
       }
       return;
     }
+
+    // En mode réel, attendre le chargement de l'auth
+    if (loading) return;
+
+    const inAuthGroup = segments[0] === 'login';
+    const inTabsGroup = segments[0] === '(tabs)';
 
     // En mode réel, rediriger vers login si non authentifié
     if (!isAuthenticated && !inAuthGroup) {
@@ -43,16 +45,16 @@ function NavigationHandler() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <DataModeProvider>
+      <DataModeProvider>
+        <AuthProvider>
           <NavigationHandler />
           <StatusBar style="light" />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="login" />
             <Stack.Screen name="(tabs)" />
           </Stack>
-        </DataModeProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </DataModeProvider>
     </SafeAreaProvider>
   );
 }
