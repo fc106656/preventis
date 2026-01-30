@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: colors.text,
+    color: colors.textPrimary,
     marginTop: 16,
   },
   subtitle: {
@@ -272,17 +272,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   input: {
     backgroundColor: colors.cardBackground,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.cardBorder,
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
-    color: colors.text,
+    color: colors.textPrimary,
   },
   button: {
     borderRadius: 8,
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   apiKeyLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.textPrimary,
     marginBottom: 12,
   },
   apiKeyBox: {
