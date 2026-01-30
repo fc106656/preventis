@@ -52,7 +52,7 @@ export function DataModeProvider({ children }: { children: React.ReactNode }) {
     }
     // On ne force PAS le passage en mode réel lors de la connexion
     // L'utilisateur peut rester en mode démo même connecté s'il le souhaite
-  }, [isAuthenticated, isInitialized]);
+  }, [isAuthenticated, isInitialized, mode]);
 
   // Sauvegarder le mode quand il change
   const setMode = (newMode: DataMode) => {
