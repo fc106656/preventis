@@ -10,11 +10,7 @@ export default function RootLayout() {
       <AuthProvider>
         <DataModeProvider>
           <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="login" />
-          </Stack>
+          <Stack screenOptions={{ headerShown: false }} />
         </DataModeProvider>
       </AuthProvider>
     </SafeAreaProvider>
