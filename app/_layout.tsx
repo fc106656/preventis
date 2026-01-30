@@ -13,11 +13,17 @@ function NavigationHandler() {
   const router = useRouter();
 
   useEffect(() => {
+    // Attendre que les segments soient disponibles (router monté)
+    if (segments.length === 0) return;
+
     // En mode démo, toujours permettre l'accès aux tabs (pas besoin d'attendre l'auth)
     if (isDemo) {
       const inTabsGroup = segments[0] === '(tabs)';
       if (!inTabsGroup) {
-        router.replace('/(tabs)');
+        // Utiliser requestAnimationFrame pour s'assurer que le router est prêt
+        requestAnimationFrame(() => {
+          router.replace('/(tabs)');
+        });
       }
       return;
     }
@@ -30,11 +36,15 @@ function NavigationHandler() {
 
     // En mode réel, rediriger vers login si non authentifié
     if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/login');
+      requestAnimationFrame(() => {
+        router.replace('/login');
+      });
     } else if (isAuthenticated && inAuthGroup) {
       // Si authentifié et sur login, aller vers les tabs
       if (!inTabsGroup) {
-        router.replace('/(tabs)');
+        requestAnimationFrame(() => {
+          router.replace('/(tabs)');
+        });
       }
     }
   }, [isAuthenticated, loading, isDemo, segments]);
@@ -47,12 +57,12 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <DataModeProvider>
         <AuthProvider>
-          <NavigationHandler />
           <StatusBar style="light" />
           <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="login" />
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="login" />
           </Stack>
+          <NavigationHandler />
         </AuthProvider>
       </DataModeProvider>
     </SafeAreaProvider>
