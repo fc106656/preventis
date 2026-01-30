@@ -1145,6 +1145,9 @@
                                         <li class="mb-2"><span class="status-done">✓</span> Système d'alertes automatique</li>
                                         <li class="mb-2"><span class="status-done">✓</span> Contrôle de l'alarme</li>
                                         <li class="mb-2"><span class="status-done">✓</span> Mode démo / Mode réel</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Authentification (JWT + API Keys)</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Gestion des modules (Gateways & Devices)</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Configuration des centrales</li>
                                     </ul>
                                 </div>
                             </div>
@@ -1155,10 +1158,10 @@
                                 <div class="card-body">
                                     <ul class="list-unstyled mb-0">
                                         <li class="mb-2"><span class="status-todo">À faire</span> Script Python Raspberry Pi</li>
-                                        <li class="mb-2"><span class="status-todo">À faire</span> Auto-enregistrement des capteurs</li>
-                                        <li class="mb-2"><span class="status-todo">À faire</span> Authentification API (clé API)</li>
+                                        <li class="mb-2"><span class="status-todo">À faire</span> Interface de création de modules dans l'app</li>
                                         <li class="mb-2"><span class="status-todo">À faire</span> Notifications push</li>
                                         <li class="mb-2"><span class="status-todo">À faire</span> Historique des événements</li>
+                                        <li class="mb-2"><span class="status-todo">À faire</span> Migration des capteurs legacy vers Devices</li>
                                     </ul>
                                 </div>
                             </div>
@@ -1465,9 +1468,123 @@
                         </div>
                     </div>
 
+                    <!-- Auth Endpoints -->
+                    <div class="card">
+                        <div class="card-header"><i class="fas fa-lock me-2"></i>Authentification <code>/api/auth</code></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="100">Méthode</th>
+                                        <th>Route</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="method-badge method-post">POST</span></td>
+                                        <td><code>/api/auth/register</code></td>
+                                        <td>Créer un compte utilisateur</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-post">POST</span></td>
+                                        <td><code>/api/auth/login</code></td>
+                                        <td>Se connecter (retourne JWT)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/auth/me</code></td>
+                                        <td>Récupérer l'utilisateur connecté (JWT requis)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/auth/api-keys</code></td>
+                                        <td>Liste des clés API (JWT requis)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-post">POST</span></td>
+                                        <td><code>/api/auth/api-keys</code></td>
+                                        <td>Créer une nouvelle clé API (JWT requis)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Gateways Endpoints -->
+                    <div class="card">
+                        <div class="card-header"><i class="fas fa-tower-broadcast me-2"></i>Gateways (Centrales) <code>/api/gateways</code></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="100">Méthode</th>
+                                        <th>Route</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/gateways</code></td>
+                                        <td>Liste des gateways de l'utilisateur (JWT requis)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-post">POST</span></td>
+                                        <td><code>/api/gateways</code></td>
+                                        <td>Créer une gateway (JWT requis)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/gateways/:id/config</code></td>
+                                        <td>Configurer la gateway (IP, port, clé API, device IDs) (JWT requis)</td>
+                                    </tr>
+                                    <tr style="background: rgba(0, 212, 255, 0.05);">
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/gateways/:id/heartbeat</code></td>
+                                        <td><strong>⚡ Heartbeat depuis la gateway (API Key requis)</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Devices Endpoints -->
+                    <div class="card">
+                        <div class="card-header"><i class="fas fa-microchip me-2"></i>Devices (Modules) <code>/api/devices</code></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="100">Méthode</th>
+                                        <th>Route</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/devices</code></td>
+                                        <td>Liste des devices de l'utilisateur (JWT requis)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-post">POST</span></td>
+                                        <td><code>/api/devices</code></td>
+                                        <td>Créer un device (JWT requis)</td>
+                                    </tr>
+                                    <tr style="background: rgba(0, 212, 255, 0.05);">
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/devices/:id/value</code></td>
+                                        <td><strong>⚡ Envoie une valeur (API Key requis)</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Sensors Endpoints -->
                     <div class="card">
-                        <div class="card-header"><i class="fas fa-microchip me-2"></i>Capteurs <code>/api/sensors</code></div>
+                        <div class="card-header"><i class="fas fa-microchip me-2"></i>Capteurs (Legacy) <code>/api/sensors</code></div>
                         <div class="card-body p-0">
                             <table class="table table-hover mb-0">
                                 <thead>
@@ -1686,6 +1803,25 @@
                         <p>
                             L'application peut fonctionner en <strong>mode démo</strong> (données fictives) ou en <strong>mode réel</strong> (données API).
                             Si l'API n'est pas accessible en mode réel, l'interface affiche des données vides avec un message d'erreur.
+                        </p>
+                    </div>
+
+                    <div class="alert-custom alert-warning mt-4">
+                        <h6><i class="fas fa-shield-halved me-2"></i>Authentification</h6>
+                        <p>
+                            En <strong>mode réel</strong>, l'authentification est obligatoire. L'utilisateur doit créer un compte ou se connecter.
+                            Chaque utilisateur reçoit une <strong>clé API</strong> à l'inscription, qui permet aux devices (Raspberry Pi) de communiquer avec l'API.
+                            L'application utilise un <strong>token JWT</strong> pour authentifier les requêtes depuis l'interface web/mobile.
+                        </p>
+                    </div>
+
+                    <div class="alert-custom mt-4">
+                        <h6><i class="fas fa-cogs me-2"></i>Gestion des Modules</h6>
+                        <p>
+                            Chaque utilisateur peut créer des <strong>gateways</strong> (centrales) et des <strong>devices</strong> (modules/capteurs).
+                            Les types de devices supportés : <code>SENSOR_CO2</code>, <code>SENSOR_TEMPERATURE</code>, <code>SENSOR_INFRARED</code>, 
+                            <code>SENSOR_SMOKE</code>, <code>MODULE_ALARM</code>, <code>MODULE_GATEWAY</code>.
+                            Une gateway par défaut est créée automatiquement à l'inscription.
                         </p>
                     </div>
                 </div>

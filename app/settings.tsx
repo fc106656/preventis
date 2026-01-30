@@ -20,6 +20,14 @@ export default function SettingsScreen() {
   const { isDemo, isReal } = useDataMode();
   const apiStatus = useApiStatus();
 
+  // Extraire l'URL de base de l'API (sans /api)
+  const getApiBaseUrl = () => {
+    if (isDemo) return '-';
+    const url = API_CONFIG.baseUrl;
+    // Enlever /api à la fin si présent
+    return url.endsWith('/api') ? url.slice(0, -4) : url;
+  };
+
   const getConnectionStatus = () => {
     if (isDemo) {
       return { text: 'Mode démonstration', status: 'neutral' as const };
@@ -83,7 +91,7 @@ export default function SettingsScreen() {
             <StatusRow
               icon="link"
               label="URL API"
-              value={isDemo ? '-' : API_CONFIG.baseUrl.replace('/api', '')}
+              value={getApiBaseUrl()}
             />
             <StatusRow
               icon="speedometer"
@@ -160,8 +168,10 @@ export default function SettingsScreen() {
               icon="open-outline"
               label="Ouvrir l'API"
               onPress={() => {
-                const url = API_CONFIG.baseUrl.replace('/api', '');
-                Linking.openURL(url);
+                const url = getApiBaseUrl();
+                if (url !== '-') {
+                  Linking.openURL(url);
+                }
               }}
               disabled={isDemo}
             />
