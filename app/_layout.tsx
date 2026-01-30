@@ -18,11 +18,19 @@ function NavigationHandler() {
     const inAuthGroup = segments[0] === 'login';
     const inTabsGroup = segments[0] === '(tabs)';
 
+    // En mode démo, toujours permettre l'accès aux tabs
+    if (isDemo) {
+      if (!inTabsGroup) {
+        router.replace('/(tabs)');
+      }
+      return;
+    }
+
     // En mode réel, rediriger vers login si non authentifié
-    if (!isDemo && !isAuthenticated && !inAuthGroup) {
+    if (!isAuthenticated && !inAuthGroup) {
       router.replace('/login');
-    } else if (isDemo || (isAuthenticated && inAuthGroup)) {
-      // Si authentifié et sur login, ou en mode démo, aller vers les tabs
+    } else if (isAuthenticated && inAuthGroup) {
+      // Si authentifié et sur login, aller vers les tabs
       if (!inTabsGroup) {
         router.replace('/(tabs)');
       }

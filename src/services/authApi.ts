@@ -40,10 +40,10 @@ export const authApi = {
     });
   },
 
-  register: async (email: string, password: string, name?: string): Promise<RegisterResponse> => {
+  register: async (email: string, password: string, name?: string, secretCode?: string): Promise<RegisterResponse> => {
     return request<RegisterResponse>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name, secretCode }),
     });
   },
 

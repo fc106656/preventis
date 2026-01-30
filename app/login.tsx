@@ -22,6 +22,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [secretCode, setSecretCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -41,9 +42,15 @@ export default function LoginScreen() {
       return;
     }
 
-    if (!isLogin && password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
-      return;
+    if (!isLogin) {
+      if (password.length < 6) {
+        Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+        return;
+      }
+      if (!secretCode) {
+        Alert.alert('Erreur', 'Le code secret est requis pour l\'inscription');
+        return;
+      }
     }
 
     setLoading(true);
@@ -53,7 +60,7 @@ export default function LoginScreen() {
         await login(email, password);
         router.replace('/(tabs)');
       } else {
-        const result = await register(email, password, name || undefined);
+        const result = await register(email, password, name || undefined, secretCode);
         setApiKey(result.apiKey);
         setShowApiKey(true);
         Alert.alert(
@@ -68,6 +75,7 @@ export default function LoginScreen() {
                 setEmail('');
                 setPassword('');
                 setName('');
+                setSecretCode('');
               },
             },
           ]
@@ -175,6 +183,24 @@ export default function LoginScreen() {
             />
           </View>
 
+          {!isLogin && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Code secret</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Code d'accès POC"
+                placeholderTextColor={colors.textMuted}
+                value={secretCode}
+                onChangeText={setSecretCode}
+                autoCapitalize="characters"
+                autoComplete="off"
+              />
+              <Text style={styles.hint}>
+                Code requis pour l'inscription (POC)
+              </Text>
+            </View>
+          )}
+
           <Pressable
             style={[styles.button, styles.buttonPrimary, loading && styles.buttonDisabled]}
             onPress={handleSubmit}
@@ -196,6 +222,7 @@ export default function LoginScreen() {
               setEmail('');
               setPassword('');
               setName('');
+              setSecretCode('');
             }}
           >
             <Text style={styles.switchText}>
@@ -304,5 +331,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.primary,
     textAlign: 'center',
+  },
+  hint: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 6,
+    fontStyle: 'italic',
   },
 });
