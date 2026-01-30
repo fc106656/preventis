@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preventis - Documentation Technique</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111820;
+            --bg-card: #151d28;
+            --accent-cyan: #00d4ff;
+            --accent-orange: #ff6b35;
+            --accent-green: #00ff88;
+            --accent-purple: #a855f7;
+            --accent-yellow: #ffd93d;
+            --accent-red: #ff4444;
+            --text-primary: #e8eaed;
+            --text-secondary: #9ca3af;
+            --border-color: #2a3544;
+            --glow-cyan: 0 0 30px rgba(0, 212, 255, 0.3);
+            --glow-green: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Force toutes les couleurs de texte */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary) !important;
+        }
+
+        p, li, span, div, td, th, label {
+            color: inherit;
+        }
+
+        .card-body p,
+        .card-body li,
+        .card-body span {
+            color: var(--text-secondary);
+        }
+
+        .card-body h5,
+        .card-body h6,
+        .card-body strong {
+            color: var(--text-primary) !important;
+        }
+
+        code {
+            color: var(--accent-cyan) !important;
+            background: var(--bg-primary) !important;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        a {
+            color: var(--accent-cyan);
+        }
+
+        a:hover {
+            color: var(--accent-green);
+        }
+
+        /* Fix Bootstrap text colors */
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+
+        .list-unstyled li {
+            color: var(--text-primary);
+        }
+
+        /* Background grid */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+        }
+
+        .header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            border-radius: 50px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-green);
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(0, 255, 136, 0); }
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs-custom {
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            padding: 0 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-tabs-custom .nav-link {
+            color: var(--text-secondary);
+            border: none;
+            padding: 1rem 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+        }
+
+        .nav-tabs-custom .nav-link:hover {
+            color: var(--text-primary);
+            border-color: transparent;
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .nav-tabs-custom .nav-link.active {
+            color: var(--accent-cyan);
+            background: transparent;
+            border-color: transparent;
+            border-bottom: 3px solid var(--accent-cyan);
+        }
+
+        .nav-tabs-custom .nav-link i {
+            margin-right: 0.5rem;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            padding: 2rem 0;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 1.25rem;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent-cyan);
+            display: inline-block;
+        }
+
+        .section-title i {
+            color: var(--accent-cyan);
+            margin-right: 0.5rem;
+        }
+
+        /* Status Badges */
+        .status-done {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--accent-green);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .status-todo {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255, 217, 61, 0.15);
+            color: var(--accent-yellow);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--bg-primary) !important;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            color: var(--text-primary) !important;
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: var(--text-primary) !important;
+            background: transparent !important;
+        }
+
+        .code-block .comment { color: #6b7280 !important; }
+        .code-block .keyword { color: #ff7b72 !important; }
+        .code-block .string { color: #a5d6ff !important; }
+        .code-block .function { color: #d2a8ff !important; }
+        .code-block .number { color: #79c0ff !important; }
+
+        /* Tables */
+        .table {
+            color: var(--text-primary) !important;
+            margin-bottom: 0;
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+        }
+
+        .table thead th {
+            background: var(--bg-primary) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-secondary) !important;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+        }
+
+        .table td {
+            border-color: var(--border-color) !important;
+            padding: 0.75rem 1rem;
+            vertical-align: middle;
+            color: var(--text-primary) !important;
+            background: transparent !important;
+        }
+
+        .table tbody tr {
+            background: transparent !important;
+        }
+
+        .table-hover tbody tr:hover {
+            background: rgba(0, 212, 255, 0.05) !important;
+            --bs-table-hover-bg: rgba(0, 212, 255, 0.05);
+        }
+
+        .table-hover tbody tr:hover td {
+            color: var(--text-primary) !important;
+        }
+
+        /* Endpoint Methods */
+        .method-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .method-get { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .method-post { background: rgba(0, 212, 255, 0.2); color: var(--accent-cyan); }
+        .method-put { background: rgba(255, 217, 61, 0.2); color: var(--accent-yellow); }
+        .method-delete { background: rgba(255, 68, 68, 0.2); color: var(--accent-red); }
+
+        /* Tech Badges */
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .tech-badge i {
+            margin-right: 0.5rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Workflow Steps */
+        .workflow-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .workflow-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-right: 1rem;
+        }
+
+        .workflow-content h5 {
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .workflow-content p {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        /* Alert Boxes */
+        .alert-custom {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-cyan);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            color: var(--text-primary) !important;
+        }
+
+        .alert-custom.alert-warning { border-left-color: var(--accent-yellow); }
+        .alert-custom.alert-success { border-left-color: var(--accent-green); }
+        .alert-custom.alert-danger { border-left-color: var(--accent-red); }
+
+        .alert-custom h6 {
+            color: var(--text-primary) !important;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-custom p {
+            color: var(--text-secondary) !important;
+            margin-bottom: 0;
+        }
+
+        .alert-custom strong {
+            color: var(--text-primary) !important;
+        }
+
+        /* Accordion */
+        .accordion-item {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-color) !important;
+            margin-bottom: 0.5rem;
+            border-radius: 8px !important;
+            overflow: hidden;
+        }
+
+        .accordion-button {
+            background: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background: rgba(0, 212, 255, 0.1) !important;
+            color: var(--accent-cyan) !important;
+            box-shadow: none !important;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .accordion-button::after {
+            filter: invert(1);
+        }
+
+        .accordion-body {
+            background: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            padding: 1.25rem;
+        }
+
+        .accordion-body pre,
+        .accordion-body code {
+            color: var(--text-primary) !important;
+        }
+
+        /* ==================== ARCHITECTURE STYLES ==================== */
+        
+        /* Layer Labels */
+        .layer-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 0.6rem 1.2rem;
+            position: absolute;
+            left: 0;
+            border-radius: 0 8px 8px 0;
+            z-index: 10;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+        }
+
+        .layer-edge { 
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            top: 60px;
+        }
+        .layer-network { 
+            background: var(--accent-orange);
+            color: var(--bg-primary);
+            top: 320px;
+        }
+        .layer-cloud { 
+            background: var(--accent-purple);
+            color: var(--bg-primary);
+            top: 580px;
+        }
+
+        /* Architecture Flow */
+        .architecture-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin-left: 3rem;
+            position: relative;
+        }
+
+        /* Node Row */
+        .node-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+            padding-bottom: 20px;
+        }
+
+        .node-row:hover { z-index: 100; }
+
+        /* Architecture Node */
+        .arch-node {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            min-width: 140px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: nodeEntrance 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .arch-node:nth-child(1) { animation-delay: 0.1s; }
+        .arch-node:nth-child(2) { animation-delay: 0.2s; }
+        .arch-node:nth-child(3) { animation-delay: 0.3s; }
+        .arch-node:nth-child(4) { animation-delay: 0.4s; }
+        .arch-node:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes nodeEntrance {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .arch-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--node-accent, var(--accent-cyan));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .arch-node:hover::before { transform: scaleX(1); }
+
+        .arch-node:hover {
+            transform: translateY(-5px);
+            border-color: var(--node-accent, var(--accent-cyan));
+            box-shadow: var(--glow-cyan);
+            z-index: 200;
+        }
+
+        .arch-node.sensor { --node-accent: var(--accent-cyan); }
+        .arch-node.controller { --node-accent: var(--accent-green); }
+        .arch-node.network { --node-accent: var(--accent-orange); }
+        .arch-node.server { --node-accent: var(--accent-purple); }
+        .arch-node.app { --node-accent: var(--accent-yellow); }
+
+        .arch-node.sensor:hover { box-shadow: 0 0 30px rgba(0, 212, 255, 0.4); }
+        .arch-node.controller:hover { box-shadow: 0 0 30px rgba(0, 255, 136, 0.4); }
+        .arch-node.network:hover { box-shadow: 0 0 30px rgba(255, 107, 53, 0.4); }
+        .arch-node.server:hover { box-shadow: 0 0 30px rgba(168, 85, 247, 0.4); }
+        .arch-node.app:hover { box-shadow: 0 0 30px rgba(255, 217, 61, 0.4); }
+
+        .node-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            font-size: 1.5rem;
+            color: var(--node-accent, var(--accent-cyan));
+            transition: all 0.3s ease;
+        }
+
+        .arch-node:hover .node-icon {
+            transform: scale(1.1);
+            background: var(--node-accent, var(--accent-cyan));
+            color: var(--bg-primary);
+        }
+
+        .node-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        .node-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .node-badge {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            padding: 0.3rem 0.6rem;
+            background: var(--node-accent, var(--accent-cyan));
+            color: var(--bg-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Tooltips */
+        .node-tooltip {
+            position: absolute;
+            top: calc(100% + 15px);
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: var(--bg-secondary);
+            border: 1px solid var(--node-accent, var(--accent-cyan));
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            width: 300px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: left;
+        }
+
+        .node-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 10px solid transparent;
+            border-bottom-color: var(--node-accent, var(--accent-cyan));
+        }
+
+        .arch-node:hover .node-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tooltip-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--accent-cyan);
+        }
+
+        .arch-node.controller .tooltip-icon { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .arch-node.network .tooltip-icon { background: rgba(255, 107, 53, 0.2); color: var(--accent-orange); }
+        .arch-node.server .tooltip-icon { background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); }
+        .arch-node.app .tooltip-icon { background: rgba(255, 217, 61, 0.2); color: var(--accent-yellow); }
+
+        .tooltip-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tooltip-desc {
+            font-size: 0.78rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .tooltip-specs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.7rem;
+        }
+
+        .tooltip-spec {
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-card);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--accent-cyan);
+        }
+
+        .arch-node.controller .tooltip-spec { color: var(--accent-green); }
+        .arch-node.network .tooltip-spec { color: var(--accent-orange); }
+        .arch-node.server .tooltip-spec { color: var(--accent-purple); }
+        .arch-node.app .tooltip-spec { color: var(--accent-yellow); }
+
+        /* Connection Lines */
+        .connection-container {
+            position: relative;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .connection-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .connection-label.lora-wifi {
+            background: linear-gradient(90deg, rgba(255, 107, 53, 0.2), rgba(0, 212, 255, 0.2));
+            color: var(--text-primary);
+            border: 1px solid var(--accent-orange);
+        }
+
+        .connection-label.internet {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--accent-purple);
+            border: 1px solid var(--accent-purple);
+        }
+
+        .connection-line {
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-orange));
+            position: relative;
+            border-radius: 2px;
+        }
+
+        .connection-line::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            top: -6px;
+            background: var(--accent-cyan);
+            animation: dataFlow 2s infinite;
+        }
+
+        @keyframes dataFlow {
+            0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+            100% { transform: translateX(-50%) translateY(60px); opacity: 0; }
+        }
+
+        /* Horizontal Connections */
+        .h-connection-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .h-connection-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+        }
+
+        .h-connection {
+            flex: 1;
+            max-width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--accent-orange), transparent);
+            position: relative;
+            border-radius: 2px;
+        }
+
+        .h-connection.primary {
+            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+        }
+
+        .data-packet {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent-orange);
+            border-radius: 50%;
+            animation: packetMove 2s infinite ease-in-out;
+        }
+
+        .h-connection.primary .data-packet { background: var(--accent-green); }
+
+        @keyframes packetMove {
+            0% { left: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        /* Scenario Cards */
+        .flow-scenarios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .scenario-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .scenario-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-3px);
+        }
+
+        .scenario-card.alert { border-left: 4px solid var(--accent-orange); }
+        .scenario-card.normal { border-left: 4px solid var(--accent-green); }
+        .scenario-card.critical { border-left: 4px solid var(--accent-red); }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .scenario-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .scenario-card.alert .scenario-icon { background: rgba(255, 107, 53, 0.2); color: var(--accent-orange); }
+        .scenario-card.normal .scenario-icon { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); }
+        .scenario-card.critical .scenario-icon { background: rgba(255, 68, 68, 0.2); color: var(--accent-red); }
+
+        .scenario-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .scenario-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .scenario-steps li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .step-number {
+            width: 20px;
+            height: 20px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 600;
+            flex-shrink: 0;
+            color: var(--text-primary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-cyan);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* Legend */
+        .legend {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .legend h4 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+        }
+
+        .legend-color.cyan { background: rgba(0, 212, 255, 0.2); border: 2px solid var(--accent-cyan); }
+        .legend-color.green { background: rgba(0, 255, 136, 0.2); border: 2px solid var(--accent-green); }
+        .legend-color.orange { background: rgba(255, 107, 53, 0.2); border: 2px solid var(--accent-orange); }
+        .legend-color.purple { background: rgba(168, 85, 247, 0.2); border: 2px solid var(--accent-purple); }
+        .legend-color.yellow { background: rgba(255, 217, 61, 0.2); border: 2px solid var(--accent-yellow); }
+
+        /* Footer */
+        footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Screen Cards */
+        .screen-card {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .screen-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-3px);
+        }
+
+        .screen-card h5 {
+            color: var(--text-primary) !important;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .screen-card h5 i {
+            color: var(--accent-cyan) !important;
+            margin-right: 0.5rem;
+        }
+
+        .screen-card p {
+            color: var(--text-secondary) !important;
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .architecture-flow { margin-left: 0; }
+            .layer-label { display: none; }
+            .header h1 { font-size: 1.5rem; }
+            .nav-tabs-custom .nav-link {
+                padding: 0.75rem 1rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                        <h1><i class="fas fa-shield-halved me-2"></i>Système Préventis</h1>
+                        <p class="subtitle">CESI Nanterre • Système de Sécurité IoT • Documentation Technique</p>
+                    </div>
+                    <div class="status-badge">POC ACTIF</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs nav-tabs-custom" id="mainTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button">
+                    <i class="fas fa-home"></i>Vue d'ensemble
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="architecture-tab" data-bs-toggle="tab" data-bs-target="#architecture" type="button">
+                    <i class="fas fa-diagram-project"></i>Architecture
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="api-tab" data-bs-toggle="tab" data-bs-target="#api" type="button">
+                    <i class="fas fa-plug"></i>API
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="app-tab" data-bs-toggle="tab" data-bs-target="#app" type="button">
+                    <i class="fas fa-mobile-screen"></i>Application
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="raspberry-tab" data-bs-toggle="tab" data-bs-target="#raspberry" type="button">
+                    <i class="fas fa-microchip"></i>Raspberry Pi
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="procedures-tab" data-bs-toggle="tab" data-bs-target="#procedures" type="button">
+                    <i class="fas fa-terminal"></i>Procédures
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="mainTabsContent">
+            
+            <!-- ==================== TAB: VUE D'ENSEMBLE ==================== -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                <div class="container">
+                    <h2 class="section-title"><i class="fas fa-info-circle"></i>Vue d'ensemble</h2>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Objectif du projet</h5>
+                            <p style="color: var(--text-secondary);">
+                                Preventis est un système de sécurité IoT complet permettant la surveillance en temps réel 
+                                d'un bâtiment grâce à différents capteurs (CO2, infrarouge, fumée, température). 
+                                Le système détecte automatiquement les situations d'alerte (incendie, intrusion) et 
+                                notifie l'utilisateur via une application mobile et web.
+                            </p>
+                            <div class="mt-3">
+                                <span class="tech-badge"><i class="fab fa-react"></i>React Native</span>
+                                <span class="tech-badge"><i class="fas fa-mobile"></i>Expo</span>
+                                <span class="tech-badge"><i class="fab fa-node-js"></i>Node.js</span>
+                                <span class="tech-badge"><i class="fas fa-database"></i>MySQL</span>
+                                <span class="tech-badge"><i class="fas fa-microchip"></i>Raspberry Pi</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header"><i class="fas fa-check-circle text-success me-2"></i>Fonctionnalités réalisées</div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2"><span class="status-done">✓</span> Application React Native (Web + Mobile)</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> API REST Node.js/Express</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Base de données MySQL avec Prisma</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Dashboard temps réel</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Gestion des capteurs</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Système d'alertes automatique</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Contrôle de l'alarme</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Mode démo / Mode réel</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header"><i class="fas fa-clock text-warning me-2"></i>À développer</div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2"><span class="status-todo">À faire</span> Script Python Raspberry Pi</li>
+                                        <li class="mb-2"><span class="status-todo">À faire</span> Auto-enregistrement des capteurs</li>
+                                        <li class="mb-2"><span class="status-todo">À faire</span> Authentification API (clé API)</li>
+                                        <li class="mb-2"><span class="status-todo">À faire</span> Notifications push</li>
+                                        <li class="mb-2"><span class="status-todo">À faire</span> Historique des événements</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stats-grid mt-4">
+                        <div class="stat-card">
+                            <div class="stat-value">&lt;30s</div>
+                            <div class="stat-label">Temps de réaction alarme</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">95%</div>
+                            <div class="stat-label">Précision détection</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">2</div>
+                            <div class="stat-label">Canaux redondants</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">24/7</div>
+                            <div class="stat-label">Surveillance continue</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: ARCHITECTURE ==================== -->
+            <div class="tab-pane fade" id="architecture" role="tabpanel">
+                <div class="container-fluid">
+                    <div class="container">
+                        <h2 class="section-title"><i class="fas fa-diagram-project"></i>Architecture Système</h2>
+                    </div>
+                    
+                    <div class="position-relative" style="padding: 2rem 0;">
+                        <!-- Layer Labels -->
+                        <div class="layer-label layer-edge">EDGE LAYER</div>
+                        <div class="layer-label layer-network">NETWORK LAYER</div>
+                        <div class="layer-label layer-cloud">CLOUD LAYER</div>
+
+                        <div class="architecture-flow">
+                            <!-- Edge Layer - Sensors -->
+                            <div class="node-row">
+                                <div class="arch-node sensor">
+                                    <span class="node-badge">INPUT</span>
+                                    <div class="node-icon"><i class="fas fa-wind"></i></div>
+                                    <div class="node-title">Capteur CO2</div>
+                                    <div class="node-subtitle">SCD30 / MH-Z19</div>
+                                    <div class="node-tooltip">
+                                        <div class="tooltip-header">
+                                            <div class="tooltip-icon"><i class="fas fa-wind"></i></div>
+                                            <span class="tooltip-title">Capteur CO2</span>
+                                        </div>
+                                        <p class="tooltip-desc">Mesure la concentration de CO2 dans l'air. Permet de détecter une présence humaine ou un départ de feu. Seuil intrusion : >800 ppm la nuit. Seuil incendie : >2000 ppm.</p>
+                                        <div class="tooltip-specs">
+                                            <span class="tooltip-spec">I2C/UART</span>
+                                            <span class="tooltip-spec">±30 ppm</span>
+                                            <span class="tooltip-spec">400-10000 ppm</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="h-connection-wrapper">
+                                    <span class="h-connection-label">LoRa</span>
+                                    <div class="h-connection"><div class="data-packet"></div></div>
+                                </div>
+
+                                <div class="arch-node controller">
+                                    <span class="node-badge">EDGE</span>
+                                    <div class="node-icon"><i class="fas fa-microchip"></i></div>
+                                    <div class="node-title">Arduino R4 WiFi</div>
+                                    <div class="node-subtitle">Fusion & Décision</div>
+                                    <div class="node-tooltip">
+                                        <div class="tooltip-header">
+                                            <div class="tooltip-icon"><i class="fas fa-microchip"></i></div>
+                                            <span class="tooltip-title">Arduino UNO R4 WiFi</span>
+                                        </div>
+                                        <p class="tooltip-desc">Cerveau du système Edge. Fusionne les données des capteurs (CO2 + PIR) et prend les décisions localement en <30s. Déclenche l'alarme même sans internet.</p>
+                                        <div class="tooltip-specs">
+                                            <span class="tooltip-spec">WiFi intégré</span>
+                                            <span class="tooltip-spec">BLE 5.0</span>
+                                            <span class="tooltip-spec">48 MHz</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="h-connection-wrapper">
+                                    <span class="h-connection-label">LoRa</span>
+                                    <div class="h-connection"><div class="data-packet"></div></div>
+                                </div>
+
+                                <div class="arch-node sensor">
+                                    <span class="node-badge">INPUT</span>
+                                    <div class="node-icon"><i class="fas fa-person-walking"></i></div>
+                                    <div class="node-title">Capteur PIR</div>
+                                    <div class="node-subtitle">Détection Mouvement</div>
+                                    <div class="node-tooltip">
+                                        <div class="tooltip-header">
+                                            <div class="tooltip-icon"><i class="fas fa-person-walking"></i></div>
+                                            <span class="tooltip-title">Capteur PIR</span>
+                                        </div>
+                                        <p class="tooltip-desc">Détecte les mouvements par infrarouge passif. Couplé au CO2, il permet de confirmer une présence humaine et d'éviter les faux positifs.</p>
+                                        <div class="tooltip-specs">
+                                            <span class="tooltip-spec">110° angle</span>
+                                            <span class="tooltip-spec">7m portée</span>
+                                            <span class="tooltip-spec">Digital</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Connection to Network -->
+                            <div class="connection-container">
+                                <span class="connection-label lora-wifi"><i class="fas fa-satellite-dish me-1"></i>LoRa / <i class="fas fa-wifi ms-1"></i>WiFi</span>
+                                <div class="connection-line" style="background: linear-gradient(180deg, var(--accent-green), var(--accent-orange));"></div>
+                            </div>
+
+                            <!-- Network Layer -->
+                            <div class="node-row">
+                                <div class="arch-node controller">
+                                    <span class="node-badge">GATEWAY</span>
+                                    <div class="node-icon"><i class="fas fa-tower-broadcast"></i></div>
+                                    <div class="node-title">Passerelle IoT</div>
+                                    <div class="node-subtitle">LoRa ↔ WiFi Bridge</div>
+                                    <div class="node-tooltip">
+                                        <div class="tooltip-header">
+                                            <div class="tooltip-icon"><i class="fas fa-tower-broadcast"></i></div>
+                                            <span class="tooltip-title">Passerelle IoT</span>
+                                        </div>
+                                        <p class="tooltip-desc">Point central qui fait le pont entre le réseau LoRa local et le réseau WiFi/Internet vers le Cloud. Assure le buffering et le routage intelligent.</p>
+                                        <div class="tooltip-specs">
+                                            <span class="tooltip-spec">LoRa 868MHz</span>
+                                            <span class="tooltip-spec">WiFi 2.4GHz</span>
+                                            <span class="tooltip-spec">Store & Forward</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Connection to Cloud -->
+                            <div class="connection-container">
+                                <span class="connection-label internet"><i class="fas fa-globe me-1"></i>Internet / API</span>
+                                <div class="connection-line" style="background: linear-gradient(180deg, var(--accent-orange), var(--accent-purple));"></div>
+                            </div>
+
+                            <!-- Cloud Layer -->
+                            <div class="node-row">
+                                <div class="arch-node server">
+                                    <div class="node-icon"><i class="fas fa-server"></i></div>
+                                    <div class="node-title">API Preventis</div>
+                                    <div class="node-subtitle">Node.js / Express</div>
+                                    <div class="node-tooltip">
+                                        <div class="tooltip-header">
+                                            <div class="tooltip-icon"><i class="fas fa-server"></i></div>
+                                            <span class="tooltip-title">API Preventis</span>
+                                        </div>
+                                        <p class="tooltip-desc">API REST qui reçoit les données des capteurs, stocke en base MySQL, génère les alertes automatiquement et expose les endpoints pour l'application.</p>
+                                        <div class="tooltip-specs">
+                                            <span class="tooltip-spec">Express.js</span>
+                                            <span class="tooltip-spec">Prisma ORM</span>
+                                            <span class="tooltip-spec">Port 3001</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="h-connection primary"><div class="data-packet"></div></div>
+
+                                <div class="arch-node server">
+                                    <div class="node-icon"><i class="fas fa-database"></i></div>
+                                    <div class="node-title">Base de Données</div>
+                                    <div class="node-subtitle">MySQL / Prisma</div>
+                                    <div class="node-tooltip">
+                                        <div class="tooltip-header">
+                                            <div class="tooltip-icon"><i class="fas fa-database"></i></div>
+                                            <span class="tooltip-title">Base de Données MySQL</span>
+                                        </div>
+                                        <p class="tooltip-desc">Stockage des capteurs, alertes, zones et état du système. Gérée via Prisma ORM pour un accès type-safe aux données.</p>
+                                        <div class="tooltip-specs">
+                                            <span class="tooltip-spec">MySQL 8</span>
+                                            <span class="tooltip-spec">Prisma Client</span>
+                                            <span class="tooltip-spec">Relations</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="h-connection"><div class="data-packet"></div></div>
+
+                                <div class="arch-node app">
+                                    <span class="node-badge">OUTPUT</span>
+                                    <div class="node-icon"><i class="fas fa-mobile-screen"></i></div>
+                                    <div class="node-title">Application</div>
+                                    <div class="node-subtitle">React Native / Expo</div>
+                                    <div class="node-tooltip">
+                                        <div class="tooltip-header">
+                                            <div class="tooltip-icon"><i class="fas fa-mobile-screen"></i></div>
+                                            <span class="tooltip-title">Application Mobile & Web</span>
+                                        </div>
+                                        <p class="tooltip-desc">Interface de visualisation pour l'utilisateur. Affiche l'état temps réel, l'historique des alertes et permet le contrôle de l'alarme.</p>
+                                        <div class="tooltip-specs">
+                                            <span class="tooltip-spec">React Native</span>
+                                            <span class="tooltip-spec">Expo Router</span>
+                                            <span class="tooltip-spec">Web + Mobile</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="container">
+                        <div class="legend">
+                            <h4><i class="fas fa-info-circle me-2"></i>Légende</h4>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-color cyan"></div>
+                                    <span>Capteurs / Input</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color green"></div>
+                                    <span>Traitement Edge</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color orange"></div>
+                                    <span>Réseau / Communication</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color purple"></div>
+                                    <span>Infrastructure Cloud</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color yellow"></div>
+                                    <span>Interface Utilisateur</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Flow Scenarios -->
+                        <div class="mt-4">
+                            <h3 class="section-title"><i class="fas fa-route"></i>Scénarios de flux</h3>
+                            <div class="flow-scenarios">
+                                <div class="scenario-card normal">
+                                    <div class="scenario-header">
+                                        <div class="scenario-icon"><i class="fas fa-check"></i></div>
+                                        <div class="scenario-title">Mode Normal (Journée)</div>
+                                    </div>
+                                    <ul class="scenario-steps">
+                                        <li><span class="step-number">1</span><span>Capteur CO2 envoie données toutes les 30s</span></li>
+                                        <li><span class="step-number">2</span><span>Arduino stocke en buffer local</span></li>
+                                        <li><span class="step-number">3</span><span>Envoi batch via WiFi → API → MySQL</span></li>
+                                        <li><span class="step-number">4</span><span>Visualisation temps réel sur l'app</span></li>
+                                    </ul>
+                                </div>
+
+                                <div class="scenario-card alert">
+                                    <div class="scenario-header">
+                                        <div class="scenario-icon"><i class="fas fa-user-secret"></i></div>
+                                        <div class="scenario-title">Intrusion Nocturne</div>
+                                    </div>
+                                    <ul class="scenario-steps">
+                                        <li><span class="step-number">1</span><span>PIR détecte mouvement (20h-07h)</span></li>
+                                        <li><span class="step-number">2</span><span>CO2 > 800 ppm confirme présence</span></li>
+                                        <li><span class="step-number">3</span><span>Alerte silencieuse via LoRa + WiFi</span></li>
+                                        <li><span class="step-number">4</span><span>Notification push service sécurité</span></li>
+                                    </ul>
+                                </div>
+
+                                <div class="scenario-card critical">
+                                    <div class="scenario-header">
+                                        <div class="scenario-icon"><i class="fas fa-fire"></i></div>
+                                        <div class="scenario-title">Départ de Feu</div>
+                                    </div>
+                                    <ul class="scenario-steps">
+                                        <li><span class="step-number">1</span><span>CO2 > 2000 ppm détecté</span></li>
+                                        <li><span class="step-number">2</span><span>Alarme sonore locale immédiate</span></li>
+                                        <li><span class="step-number">3</span><span>Alerte critique via LoRa (backup)</span></li>
+                                        <li><span class="step-number">4</span><span>Envoi simultané WiFi si disponible</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: API ==================== -->
+            <div class="tab-pane fade" id="api" role="tabpanel">
+                <div class="container">
+                    <h2 class="section-title"><i class="fas fa-plug"></i>API Preventis</h2>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 style="color: var(--text-secondary);">URL de production</h6>
+                                    <code style="font-size: 1.1rem; color: var(--accent-cyan);">https://api-preventis.clementfaux.fr/api</code>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 style="color: var(--text-secondary);">URL de développement</h6>
+                                    <code style="font-size: 1.1rem; color: var(--accent-green);">http://localhost:3001/api</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sensors Endpoints -->
+                    <div class="card">
+                        <div class="card-header"><i class="fas fa-microchip me-2"></i>Capteurs <code>/api/sensors</code></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="100">Méthode</th>
+                                        <th>Route</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/sensors</code></td>
+                                        <td>Liste tous les capteurs</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/sensors/:id</code></td>
+                                        <td>Récupère un capteur par ID</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-post">POST</span></td>
+                                        <td><code>/api/sensors</code></td>
+                                        <td>Crée un nouveau capteur</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/sensors/:id</code></td>
+                                        <td>Met à jour un capteur</td>
+                                    </tr>
+                                    <tr style="background: rgba(0, 212, 255, 0.05);">
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/sensors/:id/value</code></td>
+                                        <td><strong>⚡ Envoie une valeur (Raspberry Pi)</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-delete">DELETE</span></td>
+                                        <td><code>/api/sensors/:id</code></td>
+                                        <td>Supprime un capteur</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Alerts Endpoints -->
+                    <div class="card">
+                        <div class="card-header"><i class="fas fa-bell me-2"></i>Alertes <code>/api/alerts</code></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr><th width="100">Méthode</th><th>Route</th><th>Description</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/alerts</code></td>
+                                        <td>Liste toutes les alertes</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/alerts/active</code></td>
+                                        <td>Liste les alertes non acquittées</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/alerts/:id/acknowledge</code></td>
+                                        <td>Acquitte une alerte</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/alerts/acknowledge-all</code></td>
+                                        <td>Acquitte toutes les alertes</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Alarm Endpoints -->
+                    <div class="card">
+                        <div class="card-header"><i class="fas fa-shield-halved me-2"></i>Alarme <code>/api/alarm</code></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr><th width="100">Méthode</th><th>Route</th><th>Description</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="method-badge method-get">GET</span></td>
+                                        <td><code>/api/alarm</code></td>
+                                        <td>État actuel de l'alarme</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/alarm/mode</code></td>
+                                        <td>Change le mode (OFF, HOME, AWAY, NIGHT)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="method-badge method-put">PUT</span></td>
+                                        <td><code>/api/alarm/siren</code></td>
+                                        <td>Active/désactive la sirène</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Data Models -->
+                    <h3 class="section-title mt-4"><i class="fas fa-database"></i>Modèles de données</h3>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">Sensor (Capteur)</div>
+                                <div class="card-body">
+                                    <div class="code-block">
+<pre>{
+  <span class="string">"id"</span>: <span class="string">"string"</span>,
+  <span class="string">"name"</span>: <span class="string">"string"</span>,
+  <span class="string">"type"</span>: <span class="string">"CO2 | INFRARED | SMOKE | TEMPERATURE"</span>,
+  <span class="string">"location"</span>: <span class="string">"string"</span>,
+  <span class="string">"value"</span>: <span class="number">number</span>,
+  <span class="string">"threshold"</span>: <span class="number">number</span>,
+  <span class="string">"unit"</span>: <span class="string">"string"</span>,
+  <span class="string">"status"</span>: <span class="string">"ONLINE | OFFLINE | WARNING | ALERT"</span>,
+  <span class="string">"batteryLevel"</span>: <span class="number">number</span>,
+  <span class="string">"zoneId"</span>: <span class="string">"string | null"</span>
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">Alert (Alerte)</div>
+                                <div class="card-body">
+                                    <div class="code-block">
+<pre>{
+  <span class="string">"id"</span>: <span class="string">"string"</span>,
+  <span class="string">"type"</span>: <span class="string">"FIRE | INTRUSION | SYSTEM"</span>,
+  <span class="string">"level"</span>: <span class="string">"INFO | WARNING | CRITICAL"</span>,
+  <span class="string">"title"</span>: <span class="string">"string"</span>,
+  <span class="string">"message"</span>: <span class="string">"string"</span>,
+  <span class="string">"location"</span>: <span class="string">"string"</span>,
+  <span class="string">"acknowledged"</span>: <span class="keyword">boolean</span>,
+  <span class="string">"sensorId"</span>: <span class="string">"string | null"</span>,
+  <span class="string">"createdAt"</span>: <span class="string">"datetime"</span>
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: APPLICATION ==================== -->
+            <div class="tab-pane fade" id="app" role="tabpanel">
+                <div class="container">
+                    <h2 class="section-title"><i class="fas fa-mobile-screen"></i>Application Mobile/Web</h2>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 style="color: var(--text-secondary);">URL de production</h6>
+                                    <code style="font-size: 1.1rem; color: var(--accent-cyan);">https://preventis.clementfaux.fr</code>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 style="color: var(--text-secondary);">Technologies</h6>
+                                    <span class="tech-badge"><i class="fab fa-react"></i>React Native</span>
+                                    <span class="tech-badge"><i class="fas fa-box"></i>Expo</span>
+                                    <span class="tech-badge"><i class="fab fa-js"></i>TypeScript</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title"><i class="fas fa-window-maximize"></i>Écrans de l'application</h3>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="screen-card">
+                                <h5><i class="fas fa-grip"></i>Dashboard</h5>
+                                <p>Vue d'ensemble du système : statistiques, alertes actives, capteurs à surveiller.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="screen-card">
+                                <h5><i class="fas fa-microchip"></i>Capteurs</h5>
+                                <p>Liste et détail de tous les capteurs avec filtres par type.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="screen-card">
+                                <h5><i class="fas fa-bell"></i>Alertes</h5>
+                                <p>Historique des alertes avec possibilité d'acquittement.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="screen-card">
+                                <h5><i class="fas fa-shield-halved"></i>Alarme</h5>
+                                <p>Contrôle du mode d'alarme (OFF, HOME, AWAY, NIGHT).</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="screen-card">
+                                <h5><i class="fas fa-gear"></i>Réglages</h5>
+                                <p>Bascule mode démo/réel, état de la connexion API.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert-custom alert-success mt-4">
+                        <h6><i class="fas fa-toggle-on me-2"></i>Mode Démo / Mode Réel</h6>
+                        <p>
+                            L'application peut fonctionner en <strong>mode démo</strong> (données fictives) ou en <strong>mode réel</strong> (données API).
+                            Si l'API n'est pas accessible en mode réel, l'interface affiche des données vides avec un message d'erreur.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: RASPBERRY PI ==================== -->
+            <div class="tab-pane fade" id="raspberry" role="tabpanel">
+                <div class="container">
+                    <h2 class="section-title"><i class="fas fa-microchip"></i>Cahier des charges - Raspberry Pi</h2>
+
+                    <div class="alert-custom alert-warning mb-4">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>À destination des développeurs de l'application locale</h6>
+                        <p>Cette section décrit les spécifications techniques que doit respecter le script Python exécuté sur le Raspberry Pi pour communiquer avec l'API Preventis.</p>
+                    </div>
+
+                    <h3 class="section-title"><i class="fas fa-file-code"></i>Configuration locale</h3>
+                    <p style="color: var(--text-secondary);">Le Raspberry Pi doit disposer d'un fichier de configuration <code>config.json</code> définissant les capteurs connectés :</p>
+
+                    <div class="code-block mb-4">
+<pre><span class="comment">// config.json - Fichier de configuration sur le Raspberry Pi</span>
+{
+  <span class="string">"api"</span>: {
+    <span class="string">"baseUrl"</span>: <span class="string">"https://api-preventis.clementfaux.fr/api"</span>,
+    <span class="string">"apiKey"</span>: <span class="string">"VOTRE_CLE_API"</span>
+  },
+  <span class="string">"sendInterval"</span>: <span class="number">5000</span>,  <span class="comment">// Intervalle d'envoi en ms</span>
+  <span class="string">"capteurs"</span>: [
+    {
+      <span class="string">"hardwareId"</span>: <span class="string">"rpi-001-co2"</span>,
+      <span class="string">"pin"</span>: <span class="number">17</span>,
+      <span class="string">"type"</span>: <span class="string">"CO2"</span>,
+      <span class="string">"name"</span>: <span class="string">"Capteur CO2 Salon"</span>,
+      <span class="string">"location"</span>: <span class="string">"Salon"</span>,
+      <span class="string">"threshold"</span>: <span class="number">1000</span>,
+      <span class="string">"unit"</span>: <span class="string">"ppm"</span>
+    },
+    {
+      <span class="string">"hardwareId"</span>: <span class="string">"rpi-001-ir"</span>,
+      <span class="string">"pin"</span>: <span class="number">18</span>,
+      <span class="string">"type"</span>: <span class="string">"INFRARED"</span>,
+      <span class="string">"name"</span>: <span class="string">"Détecteur IR Entrée"</span>,
+      <span class="string">"location"</span>: <span class="string">"Entrée"</span>,
+      <span class="string">"threshold"</span>: <span class="number">1</span>,
+      <span class="string">"unit"</span>: <span class="string">""</span>
+    }
+  ]
+}</pre>
+                    </div>
+
+                    <h3 class="section-title"><i class="fas fa-arrows-spin"></i>Workflow du script</h3>
+
+                    <div class="workflow-step">
+                        <div class="workflow-number">1</div>
+                        <div class="workflow-content">
+                            <h5>Démarrage - Enregistrement des capteurs</h5>
+                            <p>Au lancement, le script parcourt la config et crée chaque capteur dans l'API.</p>
+                        </div>
+                    </div>
+
+                    <div class="code-block mb-4">
+<pre><span class="comment"># Pour chaque capteur dans config.json :</span>
+<span class="function">POST</span> /api/sensors
+{
+  <span class="string">"name"</span>: <span class="string">"Capteur CO2 Salon"</span>,
+  <span class="string">"type"</span>: <span class="string">"CO2"</span>,
+  <span class="string">"location"</span>: <span class="string">"Salon"</span>,
+  <span class="string">"threshold"</span>: <span class="number">1000</span>,
+  <span class="string">"unit"</span>: <span class="string">"ppm"</span>
+}
+
+<span class="comment"># Réponse : { "id": "clxyz123...", ... }</span>
+<span class="comment"># → Stocker l'ID pour les envois futurs</span></pre>
+                    </div>
+
+                    <div class="workflow-step">
+                        <div class="workflow-number">2</div>
+                        <div class="workflow-content">
+                            <h5>Boucle principale - Lecture et envoi des valeurs</h5>
+                            <p>Toutes les X secondes, lire les valeurs des capteurs via GPIO et les envoyer à l'API.</p>
+                        </div>
+                    </div>
+
+                    <div class="code-block mb-4">
+<pre><span class="comment"># Pour chaque capteur, toutes les 5 secondes :</span>
+<span class="function">PUT</span> /api/sensors/{sensor_id}/value
+{
+  <span class="string">"value"</span>: <span class="number">850</span>,
+  <span class="string">"batteryLevel"</span>: <span class="number">95</span>
+}
+
+<span class="comment"># L'API gère automatiquement :</span>
+<span class="comment"># - Mise à jour du statut (ONLINE, WARNING, ALERT)</span>
+<span class="comment"># - Création d'alerte si seuil dépassé</span></pre>
+                    </div>
+
+                    <h3 class="section-title"><i class="fas fa-list-check"></i>Types de capteurs supportés</h3>
+
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Unité</th>
+                                        <th>Seuil typique</th>
+                                        <th>Type d'alerte</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>CO2</code></td>
+                                        <td>Capteur de dioxyde de carbone</td>
+                                        <td>ppm</td>
+                                        <td>1000</td>
+                                        <td style="color: var(--accent-red);">FIRE</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>INFRARED</code></td>
+                                        <td>Détecteur de mouvement infrarouge</td>
+                                        <td>-</td>
+                                        <td>1</td>
+                                        <td style="color: var(--accent-orange);">INTRUSION</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>SMOKE</code></td>
+                                        <td>Détecteur de fumée</td>
+                                        <td>%</td>
+                                        <td>50</td>
+                                        <td style="color: var(--accent-red);">FIRE</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>TEMPERATURE</code></td>
+                                        <td>Capteur de température</td>
+                                        <td>°C</td>
+                                        <td>45</td>
+                                        <td style="color: var(--accent-red);">FIRE</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: PROCEDURES ==================== -->
+            <div class="tab-pane fade" id="procedures" role="tabpanel">
+                <div class="container">
+                    <h2 class="section-title"><i class="fas fa-terminal"></i>Procédures</h2>
+
+                    <div class="accordion" id="proceduresAccordion">
+                        <!-- API -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAPI">
+                                    <i class="fas fa-server me-2"></i>Lancer l'API en local
+                                </button>
+                            </h2>
+                            <div id="collapseAPI" class="accordion-collapse collapse show" data-bs-parent="#proceduresAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<pre><span class="comment"># 1. Se placer dans le dossier API</span>
+cd api
+
+<span class="comment"># 2. Installer les dépendances</span>
+npm install
+
+<span class="comment"># 3. Configurer la base de données (MySQL requis)</span>
+<span class="comment"># Créer un fichier .env avec :</span>
+DATABASE_URL=<span class="string">"mysql://user:password@localhost:3306/preventis"</span>
+PORT=<span class="number">3001</span>
+
+<span class="comment"># 4. Générer le client Prisma</span>
+npm run db:generate
+
+<span class="comment"># 5. Appliquer le schéma à la base</span>
+npm run db:push
+
+<span class="comment"># 6. (Optionnel) Insérer des données de test</span>
+npm run db:seed
+
+<span class="comment"># 7. Lancer le serveur de développement</span>
+npm run dev
+
+<span class="comment"># L'API est accessible sur http://localhost:3001/api</span></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- App -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseApp">
+                                    <i class="fas fa-mobile-screen me-2"></i>Lancer l'application en local
+                                </button>
+                            </h2>
+                            <div id="collapseApp" class="accordion-collapse collapse" data-bs-parent="#proceduresAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<pre><span class="comment"># 1. Se placer dans le dossier de l'app</span>
+cd preventis
+
+<span class="comment"># 2. Installer les dépendances</span>
+npm install
+
+<span class="comment"># 3. Lancer en mode web</span>
+npx expo start --web
+
+<span class="comment"># 4. Ou lancer en mode mobile (Expo Go requis)</span>
+npx expo start --lan
+
+<span class="comment"># L'application web est accessible sur http://localhost:8081</span></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Build APK -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAPK">
+                                    <i class="fab fa-android me-2"></i>Générer l'APK Android
+                                </button>
+                            </h2>
+                            <div id="collapseAPK" class="accordion-collapse collapse" data-bs-parent="#proceduresAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<pre><span class="comment"># 1. Se connecter à Expo</span>
+npx eas login
+
+<span class="comment"># 2. Configurer le build (première fois uniquement)</span>
+npx eas build:configure
+
+<span class="comment"># 3. Lancer le build APK</span>
+npx eas build --platform android --profile preview
+
+<span class="comment"># 4. Télécharger l'APK depuis le lien fourni</span></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Database -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDB">
+                                    <i class="fas fa-database me-2"></i>Gérer la base de données
+                                </button>
+                            </h2>
+                            <div id="collapseDB" class="accordion-collapse collapse" data-bs-parent="#proceduresAccordion">
+                                <div class="accordion-body">
+                                    <div class="code-block">
+<pre><span class="comment"># Ouvrir Prisma Studio (interface graphique)</span>
+npm run db:studio
+
+<span class="comment"># Réinitialiser la base de données</span>
+npm run db:reset
+
+<span class="comment"># Appliquer les changements de schéma</span>
+npm run db:push
+
+<span class="comment"># Insérer les données de test</span>
+npm run db:seed</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deployment Info -->
+                    <h3 class="section-title mt-4"><i class="fas fa-cloud-arrow-up"></i>Déploiement en production</h3>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header"><i class="fas fa-globe me-2"></i>Application Web</div>
+                                <div class="card-body">
+                                    <p><strong>URL :</strong> <code>preventis.clementfaux.fr</code></p>
+                                    <p><strong>Port :</strong> 3000</p>
+                                    <p><strong>Runtime :</strong> Node 22 LTS</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header"><i class="fas fa-server me-2"></i>API</div>
+                                <div class="card-body">
+                                    <p><strong>URL :</strong> <code>api-preventis.clementfaux.fr</code></p>
+                                    <p><strong>Port :</strong> 3001</p>
+                                    <p><strong>Runtime :</strong> Node 22 LTS</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong style="color: var(--accent-cyan);">Preventis</strong> • Projet IoT - Système de sécurité</p>
+                        <p>CESI Nanterre - A4 - 2026</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p>Documentation générée le</p>
+                        <p id="generationDate" style="color: var(--accent-cyan);"></p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Date de génération
+        document.getElementById('generationDate').textContent = new Date().toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Animation des packets quand hover sur les nodes
+        document.querySelectorAll('.arch-node').forEach(node => {
+            node.addEventListener('mouseenter', () => {
+                document.querySelectorAll('.data-packet').forEach(packet => {
+                    packet.style.animationDuration = '1s';
+                });
+            });
+            node.addEventListener('mouseleave', () => {
+                document.querySelectorAll('.data-packet').forEach(packet => {
+                    packet.style.animationDuration = '2s';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
