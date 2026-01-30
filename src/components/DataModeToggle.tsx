@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useDataMode } from '../context/DataModeContext';
+import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/colors';
 
 interface DataModeToggleProps {
@@ -10,7 +12,18 @@ interface DataModeToggleProps {
 }
 
 export function DataModeToggle({ showLabel = true, size = 'medium' }: DataModeToggleProps) {
-  const { mode, toggleMode, isDemo } = useDataMode();
+  const { mode, toggleMode, isDemo, setMode } = useDataMode();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleToggle = () => {
+    // Si on passe en mode réel et qu'on n'est pas connecté, rediriger vers login
+    if (isDemo && !isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    toggleMode();
+  };
 
   const sizes = {
     small: { padding: 8, icon: 16, font: 10 },
@@ -22,7 +35,7 @@ export function DataModeToggle({ showLabel = true, size = 'medium' }: DataModeTo
 
   return (
     <Pressable
-      onPress={toggleMode}
+      onPress={handleToggle}
       style={({ pressed }) => [
         styles.container,
         isDemo ? styles.demoMode : styles.realMode,
@@ -57,10 +70,21 @@ export function DataModeToggle({ showLabel = true, size = 'medium' }: DataModeTo
 
 // Version compacte pour le header
 export function DataModeBadge() {
-  const { isDemo, toggleMode } = useDataMode();
+  const { isDemo, toggleMode, setMode } = useDataMode();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleToggle = () => {
+    // Si on passe en mode réel et qu'on n'est pas connecté, rediriger vers login
+    if (isDemo && !isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    toggleMode();
+  };
 
   return (
-    <Pressable onPress={toggleMode} style={styles.badge}>
+    <Pressable onPress={handleToggle} style={styles.badge}>
       <View
         style={[
           styles.badgeDot,
@@ -75,6 +99,17 @@ export function DataModeBadge() {
 // Carte complète pour les paramètres
 export function DataModeCard() {
   const { mode, setMode, isDemo } = useDataMode();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleSetReal = () => {
+    // Si on passe en mode réel et qu'on n'est pas connecté, rediriger vers login
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    setMode('real');
+  };
 
   return (
     <View style={styles.card}>
@@ -119,7 +154,7 @@ export function DataModeCard() {
         </Pressable>
 
         <Pressable
-          onPress={() => setMode('real')}
+          onPress={handleSetReal}
           style={[
             styles.modeButton,
             mode === 'real' && styles.modeButtonActive,

@@ -1,22 +1,22 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { DataModeProvider } from '../src/context/DataModeContext';
 import { AuthProvider } from '../src/context/AuthContext';
+import { DataModeProvider } from '../src/context/DataModeContext';
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <DataModeProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <DataModeProvider>
           <StatusBar style="light" />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="login" />
           </Stack>
-        </AuthProvider>
-      </DataModeProvider>
+        </DataModeProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
