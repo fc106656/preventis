@@ -125,12 +125,40 @@ export const alarmApi = {
 // ============ STATS ============
 
 export const statsApi = {
-  getAll: () => request<any>('/stats'),
+  getAll: () => request<any>('/stats', { requireAuth: true }),
   
   getHistory: (days?: number) => {
     const query = days ? `?days=${days}` : '';
-    return request<any[]>(`/stats/history${query}`);
+    return request<any[]>(`/stats/history${query}`, { requireAuth: true });
   },
+};
+
+// ============ DEVICES ============
+
+export const devicesApi = {
+  getAll: (params?: { type?: string; status?: string; gatewayId?: string }) => {
+    const query = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return request<any[]>(`/devices${query}`, { requireAuth: true });
+  },
+  
+  getById: (id: string) => request<any>(`/devices/${id}`, { requireAuth: true }),
+  
+  create: (data: {
+    name: string;
+    type: 'SENSOR_CO2' | 'SENSOR_TEMPERATURE' | 'SENSOR_INFRARED' | 'SENSOR_SMOKE' | 'MODULE_ALARM' | 'MODULE_GATEWAY';
+    location: string;
+    threshold: number;
+    unit?: string;
+    gatewayId?: string;
+    metadata?: any;
+  }) => request<any>('/devices', { method: 'POST', body: data, requireAuth: true }),
+  
+  update: (id: string, data: any) => request<any>(`/devices/${id}`, { method: 'PUT', body: data, requireAuth: true }),
+  
+  updateValue: (id: string, value: number, batteryLevel?: number) => 
+    request<any>(`/devices/${id}/value`, { method: 'PUT', body: { value, batteryLevel }, requireAuth: true }),
+  
+  delete: (id: string) => request<any>(`/devices/${id}`, { method: 'DELETE', requireAuth: true }),
 };
 
 // Export groupé
@@ -140,6 +168,7 @@ export const api = {
   zones: zonesApi,
   alarm: alarmApi,
   stats: statsApi,
+  devices: devicesApi,
 };
 
 export default api;

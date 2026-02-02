@@ -25,8 +25,27 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
+    let errorMessage = `HTTP ${response.status}`;
+    try {
+      const error = await response.json();
+      // Construire un message d'erreur détaillé
+      errorMessage = error.error || error.message || errorMessage;
+      
+      // Ajouter les détails si disponibles
+      if (error.details) {
+        errorMessage += `: ${error.details}`;
+      }
+      if (error.code) {
+        errorMessage += ` (Code: ${error.code})`;
+      }
+      
+      console.error('API Error:', { status: response.status, error, endpoint });
+    } catch (e) {
+      const text = await response.text().catch(() => 'Erreur inconnue');
+      errorMessage = text || errorMessage;
+      console.error('API Error (text):', { status: response.status, text, endpoint });
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -70,6 +89,15 @@ export const authApi = {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ name }),
+    });
+  },
+
+  deleteApiKey: async (token: string, id: string) => {
+    return request(`/auth/api-keys/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
   },
 };

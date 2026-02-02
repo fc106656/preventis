@@ -1,5 +1,5 @@
 // Écran de connexion/inscription
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -27,14 +27,30 @@ export default function LoginScreen() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
 
-  const { login, register } = useAuth();
-  const { isDemo } = useDataMode();
+  const { login, register, isAuthenticated } = useAuth();
+  const { isDemo, isInitialized } = useDataMode();
   const router = useRouter();
 
-  // En mode démo, pas besoin d'authentification
-  if (isDemo) {
-    return null; // Ne pas afficher l'écran de login en mode démo
+  // Redirection en mode démo seulement si on est déjà authentifié
+  // Sinon, on laisse l'utilisateur se connecter même en mode démo
+  useEffect(() => {
+    if (isInitialized && isDemo && isAuthenticated) {
+      // Si on est en mode démo ET authentifié, rediriger vers les tabs
+      router.replace('/(tabs)');
+    }
+  }, [isInitialized, isDemo, isAuthenticated, router]);
+
+  // Attendre que le mode soit initialisé
+  if (!isInitialized) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
+
+  // Ne plus bloquer l'accès à la page de login en mode démo
+  // L'utilisateur doit pouvoir se connecter même en mode démo
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -42,15 +58,14 @@ export default function LoginScreen() {
       return;
     }
 
-    if (!isLogin) {
-      if (password.length < 6) {
-        Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
-        return;
-      }
-      if (!secretCode) {
-        Alert.alert('Erreur', 'Le code secret est requis pour l\'inscription');
-        return;
-      }
+    if (!isLogin && password.length < 6) {
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    if (!isLogin && !secretCode) {
+      Alert.alert('Erreur', 'Le code secret est requis pour l\'inscription');
+      return;
     }
 
     setLoading(true);
@@ -82,7 +97,9 @@ export default function LoginScreen() {
         );
       }
     } catch (error: any) {
-      Alert.alert('Erreur', error.message || 'Une erreur est survenue');
+      console.error('Registration/Login error:', error);
+      const errorMessage = error?.message || error?.error || 'Une erreur est survenue';
+      Alert.alert('Erreur', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -94,9 +111,9 @@ export default function LoginScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
             <Ionicons name="key" size={64} color={colors.primary} />
-            <Text style={styles.title}>Votre clé API</Text>
+            <Text style={styles.title}>Clé API Générée</Text>
             <Text style={styles.subtitle}>
-              Cette clé vous permettra de connecter vos devices à l'API
+              Veuillez copier votre clé API ci-dessous. Elle est nécessaire pour connecter vos modules et ne sera plus affichée.
             </Text>
           </View>
 
@@ -105,7 +122,6 @@ export default function LoginScreen() {
             <Pressable
               style={styles.apiKeyBox}
               onPress={() => {
-                // Copier dans le presse-papier (nécessite expo-clipboard)
                 Alert.alert('Info', 'Copiez cette clé et conservez-la en lieu sûr');
               }}
             >
@@ -178,8 +194,6 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              autoCapitalize="none"
-              autoComplete="password"
             />
           </View>
 
@@ -188,16 +202,13 @@ export default function LoginScreen() {
               <Text style={styles.label}>Code secret</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Code d'accès POC"
+                placeholder="Code requis pour l'inscription (POC)"
                 placeholderTextColor={colors.textMuted}
                 value={secretCode}
                 onChangeText={setSecretCode}
-                autoCapitalize="characters"
-                autoComplete="off"
+                secureTextEntry
               />
-              <Text style={styles.hint}>
-                Code requis pour l'inscription (POC)
-              </Text>
+              <Text style={styles.hint}>Demandez le code à l'administrateur.</Text>
             </View>
           )}
 
@@ -209,26 +220,13 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>
-                {isLogin ? 'Se connecter' : 'Créer le compte'}
-              </Text>
+              <Text style={styles.buttonText}>{isLogin ? 'Se connecter' : 'S\'inscrire'}</Text>
             )}
           </Pressable>
 
-          <Pressable
-            style={styles.switchButton}
-            onPress={() => {
-              setIsLogin(!isLogin);
-              setEmail('');
-              setPassword('');
-              setName('');
-              setSecretCode('');
-            }}
-          >
+          <Pressable style={styles.switchButton} onPress={() => setIsLogin(!isLogin)}>
             <Text style={styles.switchText}>
-              {isLogin
-                ? "Pas encore de compte ? S'inscrire"
-                : 'Déjà un compte ? Se connecter'}
+              {isLogin ? 'Pas de compte ? S\'inscrire' : 'Déjà un compte ? Se connecter'}
             </Text>
           </Pressable>
         </View>
@@ -244,8 +242,9 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   header: {
     alignItems: 'center',
@@ -278,7 +277,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.cardBackground,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.borderDefault,
     borderRadius: 8,
     padding: 16,
     fontSize: 16,

@@ -9,6 +9,14 @@ interface User {
   name?: string;
 }
 
+interface ApiKey {
+  id: string;
+  name: string;
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -18,6 +26,10 @@ interface AuthContextType {
   register: (email: string, password: string, name?: string, secretCode?: string) => Promise<{ apiKey: string }>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  // Gestion des clés API
+  getApiKeys: () => Promise<ApiKey[]>;
+  createApiKey: (name?: string) => Promise<{ apiKey: string; message: string }>;
+  deleteApiKey: (id: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,6 +41,8 @@ const STORAGE_KEYS = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  console.log('🟡 AuthProvider: Rendering');
+  
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -36,16 +50,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Charger les données depuis le stockage au démarrage
   useEffect(() => {
+    console.log('🟡 AuthProvider: useEffect triggered, loading auth...');
     loadStoredAuth();
   }, []);
 
   async function loadStoredAuth() {
     try {
+      console.log('🟡 AuthProvider: Loading from AsyncStorage...');
       const [storedToken, storedUser, storedApiKey] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEYS.TOKEN),
         AsyncStorage.getItem(STORAGE_KEYS.USER),
         AsyncStorage.getItem(STORAGE_KEYS.API_KEY),
       ]);
+
+      console.log('🟡 AuthProvider: Loaded from storage:', {
+        hasToken: !!storedToken,
+        hasUser: !!storedUser,
+        hasApiKey: !!storedApiKey,
+      });
 
       if (storedToken && storedUser) {
         setToken(storedToken);
@@ -53,10 +75,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (storedApiKey) {
           setApiKey(storedApiKey);
         }
+        console.log('🟡 AuthProvider: Auth data restored');
+      } else {
+        console.log('🟡 AuthProvider: No stored auth data');
       }
     } catch (error) {
-      console.error('Error loading stored auth:', error);
+      console.error('❌ AuthProvider: Error loading stored auth:', error);
     } finally {
+      console.log('🟡 AuthProvider: Setting loading to false');
       setLoading(false);
     }
   }
@@ -111,6 +137,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function getApiKeys(): Promise<ApiKey[]> {
+    if (!token) throw new Error('Non authentifié');
+    try {
+      const response = await authApi.getApiKeys(token);
+      return response.apiKeys || [];
+    } catch (error: any) {
+      throw new Error(error.message || 'Erreur lors de la récupération des clés API');
+    }
+  }
+
+  async function createApiKey(name?: string): Promise<{ apiKey: string; message: string }> {
+    if (!token) throw new Error('Non authentifié');
+    try {
+      const response = await authApi.createApiKey(token, name);
+      // Mettre à jour la clé API stockée si c'est la première
+      if (!apiKey && response.apiKey?.key) {
+        setApiKey(response.apiKey.key);
+        await AsyncStorage.setItem(STORAGE_KEYS.API_KEY, response.apiKey.key);
+      }
+      return {
+        apiKey: response.apiKey?.key || '',
+        message: response.message || 'Clé API créée',
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Erreur lors de la création de la clé API');
+    }
+  }
+
+  async function deleteApiKey(id: string): Promise<void> {
+    if (!token) throw new Error('Non authentifié');
+    try {
+      await authApi.deleteApiKey(token, id);
+    } catch (error: any) {
+      throw new Error(error.message || 'Erreur lors de la suppression de la clé API');
+    }
+  }
+
   const value: AuthContextType = {
     user,
     token,
@@ -120,6 +183,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     isAuthenticated: !!user && !!token,
+    getApiKeys,
+    createApiKey,
+    deleteApiKey,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

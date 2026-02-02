@@ -17,11 +17,15 @@ export function DataModeToggle({ showLabel = true, size = 'medium' }: DataModeTo
   const router = useRouter();
 
   const handleToggle = () => {
+    console.log('🟣 DataModeToggle: handleToggle called, isDemo:', isDemo, 'isAuthenticated:', isAuthenticated);
     // Si on passe en mode réel et qu'on n'est pas connecté, rediriger vers login
     if (isDemo && !isAuthenticated) {
-      router.push('/login');
+      console.log('🟣 DataModeToggle: Not authenticated, redirecting to login');
+      // Utiliser replace pour éviter que index.tsx n'intercepte la navigation
+      router.replace('/login');
       return;
     }
+    console.log('🟣 DataModeToggle: Toggling mode');
     toggleMode();
   };
 
@@ -75,11 +79,15 @@ export function DataModeBadge() {
   const router = useRouter();
 
   const handleToggle = () => {
+    console.log('🟣 DataModeBadge: handleToggle called, isDemo:', isDemo, 'isAuthenticated:', isAuthenticated);
     // Si on passe en mode réel et qu'on n'est pas connecté, rediriger vers login
     if (isDemo && !isAuthenticated) {
-      router.push('/login');
+      console.log('🟣 DataModeBadge: Not authenticated, redirecting to login');
+      // Utiliser replace pour éviter que index.tsx n'intercepte la navigation
+      router.replace('/login');
       return;
     }
+    console.log('🟣 DataModeBadge: Toggling mode');
     toggleMode();
   };
 
@@ -103,11 +111,15 @@ export function DataModeCard() {
   const router = useRouter();
 
   const handleSetReal = () => {
+    console.log('🟣 DataModeCard: handleSetReal called, isAuthenticated:', isAuthenticated, 'current mode:', mode);
     // Si on passe en mode réel et qu'on n'est pas connecté, rediriger vers login
     if (!isAuthenticated) {
-      router.push('/login');
+      console.log('🟣 DataModeCard: Not authenticated, redirecting to login');
+      // Utiliser replace pour éviter que index.tsx n'intercepte la navigation
+      router.replace('/login');
       return;
     }
+    console.log('🟣 DataModeCard: Setting mode to real');
     setMode('real');
   };
 

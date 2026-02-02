@@ -1,64 +1,71 @@
 // Redirection conditionnelle basée sur le mode et l'authentification
-import { useEffect, useState } from 'react';
-import { useRouter, useSegments } from 'expo-router';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { Redirect } from 'expo-router';
+import { View, ActivityIndicator, Text } from 'react-native';
 import { useDataMode } from '../src/context/DataModeContext';
 import { useAuth } from '../src/context/AuthContext';
 import { colors } from '../src/theme/colors';
 
+console.log('🟢 index.tsx: Module loaded');
+
 export default function Index() {
-  const { isDemo, isInitialized } = useDataMode();
-  const { isAuthenticated, loading } = useAuth();
-  const router = useRouter();
-  const segments = useSegments();
-  const [hasRedirected, setHasRedirected] = useState(false);
-
-  // Debug: log pour voir ce qui se passe
-  useEffect(() => {
-    console.log('Index render:', { isDemo, isInitialized, isAuthenticated, loading, segments, hasRedirected });
-  }, [isDemo, isInitialized, isAuthenticated, loading, segments, hasRedirected]);
-
-  // Redirection une fois que tout est chargé
-  useEffect(() => {
-    if (loading || !isInitialized || hasRedirected) return;
-
-    const currentPath = segments.join('/');
+  console.log('🟢 index.tsx: Component rendering');
+  
+  let isDemo = false;
+  let isInitialized = false;
+  let isAuthenticated = false;
+  let loading = true;
+  
+  try {
+    const dataMode = useDataMode();
+    const auth = useAuth();
     
-    // Ne rediriger que si on est sur la route index
-    if (currentPath === '' || currentPath === 'index') {
-      if (isDemo) {
-        console.log('Redirecting to tabs (demo mode)');
-        router.replace('/(tabs)');
-        setHasRedirected(true);
-      } else if (!isAuthenticated) {
-        console.log('Redirecting to login (not authenticated)');
-        router.replace('/login');
-        setHasRedirected(true);
-      } else {
-        console.log('Redirecting to tabs (authenticated)');
-        router.replace('/(tabs)');
-        setHasRedirected(true);
-      }
-    }
-  }, [isDemo, isInitialized, isAuthenticated, loading, segments, router, hasRedirected]);
+    isDemo = dataMode.isDemo;
+    isInitialized = dataMode.isInitialized;
+    isAuthenticated = auth.isAuthenticated;
+    loading = auth.loading;
+    
+    console.log('🟢 index.tsx: State:', {
+      isDemo,
+      isInitialized,
+      isAuthenticated,
+      loading,
+    });
+  } catch (error) {
+    console.error('❌ index.tsx: Error getting context:', error);
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ color: '#fff', fontSize: 18, marginBottom: 10 }}>Erreur de chargement</Text>
+        <Text style={{ color: '#f00', fontSize: 12 }}>{String(error)}</Text>
+      </View>
+    );
+  }
 
   // Attendre que l'auth et le mode soient chargés avant de rediriger
   if (loading || !isInitialized) {
+    console.log('🟢 index.tsx: Showing loader');
     return (
-      <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ color: colors.textPrimary, marginTop: 16 }}>
-          Chargement... {loading ? 'Auth' : ''} {!isInitialized ? 'Mode' : ''}
+      <View style={{ flex: 1, backgroundColor: colors?.background || '#0D1117', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={colors?.primary || '#007AFF'} />
+        <Text style={{ color: colors?.textPrimary || '#fff', marginTop: 16 }}>
+          {loading ? 'Chargement...' : 'Initialisation...'}
         </Text>
       </View>
     );
   }
 
-  // Afficher quelque chose pendant la redirection
-  return (
-    <View style={{ flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={{ color: colors.textPrimary, marginTop: 16 }}>Redirection...</Text>
-    </View>
-  );
+  // En mode démo, toujours rediriger vers les tabs
+  if (isDemo) {
+    console.log('🟢 index.tsx: Redirecting to /(tabs) (demo mode)');
+    return <Redirect href="/(tabs)" />;
+  }
+
+  // En mode réel, rediriger vers login si non authentifié
+  if (!isAuthenticated) {
+    console.log('🟢 index.tsx: Mode réel mais non authentifié, redirecting to /login');
+    return <Redirect href="/login" />;
+  }
+
+  // En mode réel et authentifié, rediriger vers les tabs
+  console.log('🟢 index.tsx: Redirecting to /(tabs) (real mode, authenticated)');
+  return <Redirect href="/(tabs)" />;
 }

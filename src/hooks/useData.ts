@@ -28,9 +28,9 @@ export function useSensors() {
       return;
     }
 
-    // Mode réel : appel API
+    // Mode réel : appel API (utiliser devices au lieu de sensors)
     try {
-      const data = await api.sensors.getAll();
+      const data = await api.devices.getAll();
       setSensors(data);
     } catch (err: any) {
       console.error('API Error (sensors):', err.message);

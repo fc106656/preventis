@@ -2,17 +2,54 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DataModeBadge } from '../../src/components/DataModeToggle';
+import { View, Text, Pressable, Linking } from 'react-native';
+import { useDataMode } from '../../src/context/DataModeContext';
+import { useAuth } from '../../src/context/AuthContext';
+import { useRouter } from 'expo-router';
+import { colors } from '../../src/theme/colors';
 
-const colors = {
-  background: '#0D1117',
-  cardBackground: '#161B22',
-  primary: '#58A6FF',
-  textMuted: '#6E7681',
-  danger: '#F85149',
-};
+console.log('📑 (tabs)/_layout.tsx: Loading');
+
+// Composant DataModeBadge simplifié pour éviter les erreurs
+function DataModeBadge() {
+  console.log('📑 DataModeBadge: Rendering');
+  try {
+    const { isDemo, toggleMode } = useDataMode();
+    const { isAuthenticated } = useAuth();
+    const router = useRouter();
+
+    const handleToggle = () => {
+      console.log('🟣 DataModeBadge (tabs): handleToggle called, isDemo:', isDemo, 'isAuthenticated:', isAuthenticated);
+      if (isDemo && !isAuthenticated) {
+        console.log('🟣 DataModeBadge (tabs): Not authenticated, redirecting to login');
+        // Utiliser replace pour éviter que index.tsx n'intercepte la navigation
+        router.replace('/login');
+        return;
+      }
+      console.log('🟣 DataModeBadge (tabs): Toggling mode');
+      toggleMode();
+    };
+
+    return (
+      <Pressable onPress={handleToggle} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, backgroundColor: colors.backgroundTertiary }}>
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: isDemo ? colors.warning : colors.success }} />
+        <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.5 }}>
+          {isDemo ? 'DÉMO' : 'LIVE'}
+        </Text>
+      </Pressable>
+    );
+  } catch (error) {
+    console.error('❌ DataModeBadge: Error:', error);
+    return (
+      <View style={{ padding: 8 }}>
+        <Text style={{ color: colors.danger, fontSize: 10 }}>Error</Text>
+      </View>
+    );
+  }
+}
 
 export default function TabsLayout() {
+  console.log('📑 (tabs)/_layout.tsx: Rendering');
   const insets = useSafeAreaInsets();
 
   return (
@@ -24,18 +61,32 @@ export default function TabsLayout() {
           elevation: 0,
           shadowOpacity: 0,
         },
-        headerTintColor: '#F0F6FC',
+        headerTintColor: colors.textPrimary,
         headerTitleStyle: {
           fontWeight: '700',
           fontSize: 20,
         },
-        headerRight: () => <DataModeBadge />,
+        headerRight: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Pressable
+              onPress={() => Linking.openURL('https://preventis.stark-server.fr/documentation/')}
+              style={{
+                padding: 6,
+                borderRadius: 8,
+                backgroundColor: colors.backgroundTertiary,
+              }}
+            >
+              <Ionicons name="document-text-outline" size={18} color={colors.textSecondary} />
+            </Pressable>
+            <DataModeBadge />
+          </View>
+        ),
         headerRightContainerStyle: {
           paddingRight: 16,
         },
         tabBarStyle: {
           backgroundColor: colors.cardBackground,
-          borderTopColor: '#30363D',
+          borderTopColor: colors.cardBorder,
           borderTopWidth: 1,
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom > 0 ? insets.bottom : 8,

@@ -1148,6 +1148,9 @@
                                         <li class="mb-2"><span class="status-done">✓</span> Authentification (JWT + API Keys)</li>
                                         <li class="mb-2"><span class="status-done">✓</span> Gestion des modules (Gateways & Devices)</li>
                                         <li class="mb-2"><span class="status-done">✓</span> Configuration des centrales</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Serveur CoAP (UDP) pour capteurs IoT</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Création de capteurs depuis l'application</li>
+                                        <li class="mb-2"><span class="status-done">✓</span> Gestion des clés API par utilisateur</li>
                                     </ul>
                                 </div>
                             </div>
@@ -1158,7 +1161,6 @@
                                 <div class="card-body">
                                     <ul class="list-unstyled mb-0">
                                         <li class="mb-2"><span class="status-todo">À faire</span> Script Python Raspberry Pi</li>
-                                        <li class="mb-2"><span class="status-todo">À faire</span> Interface de création de modules dans l'app</li>
                                         <li class="mb-2"><span class="status-todo">À faire</span> Notifications push</li>
                                         <li class="mb-2"><span class="status-todo">À faire</span> Historique des événements</li>
                                         <li class="mb-2"><span class="status-todo">À faire</span> Migration des capteurs legacy vers Devices</li>
@@ -1458,7 +1460,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6 style="color: var(--text-secondary);">URL de production</h6>
-                                    <code style="font-size: 1.1rem; color: var(--accent-cyan);">https://api-preventis.clementfaux.fr/api</code>
+                                    <code style="font-size: 1.1rem; color: var(--accent-cyan);">https://api-preventis.stark-server.fr/api</code>
                                 </div>
                                 <div class="col-md-6">
                                     <h6 style="color: var(--text-secondary);">URL de développement</h6>
@@ -1693,6 +1695,70 @@
                         </div>
                     </div>
 
+                    <!-- CoAP Server -->
+                    <div class="card mt-4" style="border: 2px solid var(--accent-purple);">
+                        <div class="card-header" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1));">
+                            <i class="fas fa-satellite-dish me-2" style="color: var(--accent-purple);"></i>
+                            <strong>Serveur CoAP (UDP)</strong> <code>coap://api-preventis.stark-server.fr:5683</code>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                                Le serveur CoAP permet aux capteurs IoT (ESP32, Arduino, etc.) d'envoyer des données via le protocole CoAP (UDP) au lieu de HTTP. 
+                                Plus léger et adapté aux contraintes des dispositifs IoT.
+                            </p>
+                            
+                            <h6 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-route me-2" style="color: var(--accent-purple);"></i>Endpoint
+                            </h6>
+                            <div class="code-block" style="margin-bottom: 1rem;">
+                                <pre><span class="method-badge method-post" style="display: inline-block; margin-right: 0.5rem;">POST</span> <span class="string">coap://api-preventis.stark-server.fr:5683/devices/{deviceId}/value</span></pre>
+                            </div>
+
+                            <h6 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-key me-2" style="color: var(--accent-purple);"></i>Authentification
+                            </h6>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">L'API Key peut être fournie de deux façons :</p>
+                            <ol style="color: var(--text-secondary); padding-left: 1.5rem;">
+                                <li style="margin-bottom: 0.5rem;">
+                                    <strong>Query string (recommandé)</strong> : 
+                                    <code style="color: var(--accent-cyan);">?apiKey=YOUR_API_KEY</code>
+                                </li>
+                                <li>
+                                    <strong>Dans le payload JSON</strong> : 
+                                    <code style="color: var(--accent-cyan);">{"apiKey": "YOUR_API_KEY", "value": 25.5}</code>
+                                </li>
+                            </ol>
+
+                            <h6 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-code me-2" style="color: var(--accent-purple);"></i>Exemple de requête
+                            </h6>
+                            <div class="code-block">
+                                <pre>{
+  <span class="string">"value"</span>: <span class="number">25.5</span>,
+  <span class="string">"batteryLevel"</span>: <span class="number">80</span>
+}</pre>
+                            </div>
+
+                            <h6 style="color: var(--text-primary); margin-top: 1.5rem; margin-bottom: 0.75rem;">
+                                <i class="fas fa-check-circle me-2" style="color: var(--accent-green);"></i>Codes de réponse CoAP
+                            </h6>
+                            <ul style="color: var(--text-secondary); padding-left: 1.5rem;">
+                                <li><code style="color: var(--accent-green);">2.04 Changed</code> : Succès, device mis à jour</li>
+                                <li><code style="color: var(--accent-orange);">4.00 Bad Request</code> : Données invalides</li>
+                                <li><code style="color: var(--accent-orange);">4.01 Unauthorized</code> : API key manquante ou invalide</li>
+                                <li><code style="color: var(--accent-orange);">4.04 Not Found</code> : Device non trouvé</li>
+                                <li><code style="color: var(--accent-orange);">4.05 Method Not Allowed</code> : Méthode non supportée (seul POST)</li>
+                                <li><code style="color: var(--accent-red);">5.00 Internal Server Error</code> : Erreur serveur</li>
+                            </ul>
+
+                            <div class="alert alert-info mt-3" style="background: rgba(0, 212, 255, 0.1); border-color: var(--accent-cyan); color: var(--text-secondary);">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note :</strong> Le serveur CoAP démarre automatiquement avec l'API HTTP. 
+                                Les deux serveurs partagent la même logique métier et créent automatiquement des alertes si un seuil est dépassé.
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Data Models -->
                     <h3 class="section-title mt-4"><i class="fas fa-database"></i>Modèles de données</h3>
                     
@@ -1752,7 +1818,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6 style="color: var(--text-secondary);">URL de production</h6>
-                                    <code style="font-size: 1.1rem; color: var(--accent-cyan);">https://preventis.clementfaux.fr</code>
+                                    <code style="font-size: 1.1rem; color: var(--accent-cyan);">https://preventis.stark-server.fr</code>
                                 </div>
                                 <div class="col-md-6">
                                     <h6 style="color: var(--text-secondary);">Technologies</h6>
@@ -2099,7 +2165,7 @@ npm run db:seed</pre>
                             <div class="card h-100">
                                 <div class="card-header"><i class="fas fa-globe me-2"></i>Application Web</div>
                                 <div class="card-body">
-                                    <p><strong>URL :</strong> <code>preventis.clementfaux.fr</code></p>
+                                    <p><strong>URL :</strong> <code>preventis.stark-server.fr</code></p>
                                     <p><strong>Port :</strong> 3000</p>
                                     <p><strong>Runtime :</strong> Node 22 LTS</p>
                                 </div>
@@ -2109,7 +2175,8 @@ npm run db:seed</pre>
                             <div class="card h-100">
                                 <div class="card-header"><i class="fas fa-server me-2"></i>API</div>
                                 <div class="card-body">
-                                    <p><strong>URL :</strong> <code>api-preventis.clementfaux.fr</code></p>
+                                    <p><strong>URL :</strong> <code>api-preventis.stark-server.fr</code></p>
+                                    <p><strong>CoAP (UDP) :</strong> <code>api-preventis.stark-server.fr:5683</code></p>
                                     <p><strong>Port :</strong> 3001</p>
                                     <p><strong>Runtime :</strong> Node 22 LTS</p>
                                 </div>
