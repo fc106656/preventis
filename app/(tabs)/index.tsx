@@ -8,6 +8,7 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -271,6 +272,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+    paddingBottom: Platform.OS === 'web' ? 90 : 16, // Espace pour le tab bar sur web
   },
   header: {
     flexDirection: 'row',

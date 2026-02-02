@@ -2,7 +2,7 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View, Text, Pressable, Linking } from 'react-native';
+import { View, Text, Pressable, Linking, Platform } from 'react-native';
 import { useDataMode } from '../../src/context/DataModeContext';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRouter } from 'expo-router';
@@ -51,6 +51,11 @@ function DataModeBadge() {
 export default function TabsLayout() {
   console.log('📑 (tabs)/_layout.tsx: Rendering');
   const insets = useSafeAreaInsets();
+  
+  // Sur web mobile, on s'assure que le menu reste visible
+  const isWeb = Platform.OS === 'web';
+  const bottomInset = isWeb ? 0 : insets.bottom;
+  const tabBarHeight = isWeb ? 70 : 60 + bottomInset;
 
   return (
     <Tabs
@@ -88,9 +93,17 @@ export default function TabsLayout() {
           backgroundColor: colors.cardBackground,
           borderTopColor: colors.cardBorder,
           borderTopWidth: 1,
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+          height: tabBarHeight,
+          paddingBottom: bottomInset > 0 ? bottomInset : 8,
           paddingTop: 8,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          ...(isWeb ? {
+            maxHeight: 70,
+            minHeight: 70,
+          } : {}),
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,

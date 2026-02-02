@@ -32,26 +32,26 @@ export default function Index() {
     });
   } catch (error) {
     console.error('❌ index.tsx: Error getting context:', error);
-    return (
+  return (
       <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
         <Text style={{ color: '#fff', fontSize: 18, marginBottom: 10 }}>Erreur de chargement</Text>
         <Text style={{ color: '#f00', fontSize: 12 }}>{String(error)}</Text>
-      </View>
+            </View>
     );
   }
 
   // Attendre que l'auth et le mode soient chargés avant de rediriger
   if (loading || !isInitialized) {
     console.log('🟢 index.tsx: Showing loader');
-    return (
+  return (
       <View style={{ flex: 1, backgroundColor: colors?.background || '#0D1117', justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color={colors?.primary || '#007AFF'} />
         <Text style={{ color: colors?.textPrimary || '#fff', marginTop: 16 }}>
           {loading ? 'Chargement...' : 'Initialisation...'}
         </Text>
-      </View>
-    );
-  }
+    </View>
+  );
+}
 
   // En mode démo, toujours rediriger vers les tabs
   if (isDemo) {
