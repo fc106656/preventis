@@ -6,3 +6,4 @@ export { StatCard } from './StatCard';
 export { ZoneCard } from './ZoneCard';
 export { DataModeToggle, DataModeBadge, DataModeCard } from './DataModeToggle';
 export { AlertProvider, useAlert } from './AlertModal';
+export { DeviceHistoryChart } from './DeviceHistoryChart';

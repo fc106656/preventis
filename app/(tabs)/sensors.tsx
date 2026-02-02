@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
-import { SensorCard, StatusBadge, useAlert } from '../../src/components';
+import { SensorCard, StatusBadge, useAlert, DeviceHistoryChart } from '../../src/components';
 import { useSensors } from '../../src/hooks/useData';
 import { useDataMode } from '../../src/context/DataModeContext';
 import { useAuth } from '../../src/context/AuthContext';
@@ -42,6 +42,9 @@ export default function SensorsScreen() {
   const [selectedSensor, setSelectedSensor] = useState<any | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddDevice, setShowAddDevice] = useState(false);
+  const [historyPeriod, setHistoryPeriod] = useState<'15m' | '1h' | '6h' | '24h' | '7d'>('1h');
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [deviceForm, setDeviceForm] = useState({
     name: '',
     type: 'SENSOR_CO2' as 'SENSOR_CO2' | 'SENSOR_TEMPERATURE' | 'SENSOR_INFRARED' | 'SENSOR_SMOKE' | 'MODULE_ALARM',
@@ -212,6 +215,29 @@ export default function SensorsScreen() {
       true
     );
   };
+
+  // Charger l'historique quand un capteur est sélectionné ou que la période change
+  useEffect(() => {
+    const loadHistory = async () => {
+      if (!selectedSensor || !isReal || !isAuthenticated) {
+        setHistoryData([]);
+        return;
+      }
+
+      setLoadingHistory(true);
+      try {
+        const data = await api.devices.getHistory(selectedSensor.id, historyPeriod);
+        setHistoryData(data);
+      } catch (error: any) {
+        console.error('Erreur lors du chargement de l\'historique:', error);
+        setHistoryData([]);
+      } finally {
+        setLoadingHistory(false);
+      }
+    };
+
+    loadHistory();
+  }, [selectedSensor?.id, historyPeriod, isReal, isAuthenticated]);
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -393,6 +419,42 @@ export default function SensorsScreen() {
                   <StatusBadge status={selectedSensor.status?.toLowerCase() as any} />
                 </View>
               </View>
+
+              {/* Graphique historique */}
+              {isReal && isAuthenticated && (
+                <View style={styles.historySection}>
+                  <View style={styles.historyHeader}>
+                    <Text style={styles.historyTitle}>Historique des valeurs</Text>
+                    <View style={styles.periodSelector}>
+                      {(['15m', '1h', '6h', '24h', '7d'] as const).map((period) => (
+                        <Pressable
+                          key={period}
+                          onPress={() => setHistoryPeriod(period)}
+                          style={[
+                            styles.periodButton,
+                            historyPeriod === period && styles.periodButtonActive,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.periodButtonText,
+                              historyPeriod === period && styles.periodButtonTextActive,
+                            ]}
+                          >
+                            {period === '15m' ? '15m' : period === '1h' ? '1h' : period === '6h' ? '6h' : period === '24h' ? '24h' : '7j'}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                  <DeviceHistoryChart
+                    data={historyData}
+                    unit={selectedSensor.unit || ''}
+                    threshold={selectedSensor.threshold}
+                    period={historyPeriod}
+                  />
+                </View>
+              )}
 
               <View style={styles.detailActions}>
                 <Pressable style={styles.actionButton} onPress={refresh}>
@@ -982,6 +1044,47 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 6,
+  },
+  // History section
+  historySection: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
+  },
+  historyHeader: {
+    marginBottom: 16,
+  },
+  historyTitle: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  periodButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: colors.backgroundTertiary,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  periodButtonActive: {
+    backgroundColor: colors.infoBg,
+    borderColor: colors.primary,
+  },
+  periodButtonText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  periodButtonTextActive: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   deleteActionButton: {
     backgroundColor: colors.dangerBg,

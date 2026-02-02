@@ -159,6 +159,9 @@ export const devicesApi = {
     request<any>(`/devices/${id}/value`, { method: 'PUT', body: { value, batteryLevel }, requireAuth: true }),
   
   delete: (id: string) => request<any>(`/devices/${id}`, { method: 'DELETE', requireAuth: true }),
+  
+  getHistory: (id: string, period: '15m' | '1h' | '6h' | '24h' | '7d' = '1h') => 
+    request<any[]>(`/devices/${id}/history?period=${period}`, { requireAuth: true }),
 };
 
 // Export groupé
