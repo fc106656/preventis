@@ -2,7 +2,7 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View, Text, Pressable, Linking, Platform } from 'react-native';
+import { View, Text, Pressable, Linking, Platform, Image } from 'react-native';
 import { useDataMode } from '../../src/context/DataModeContext';
 import { useAuth } from '../../src/context/AuthContext';
 import { useRouter } from 'expo-router';
@@ -117,7 +117,13 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Dashboard',
-          headerTitle: 'Preventis',
+          headerTitle: () => (
+            <Image
+              source={require('../../assets/logo_preventis_sm.png')}
+              style={{ width: 120, height: 32 }}
+              resizeMode="contain"
+            />
+          ),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid" size={size} color={color} />
           ),

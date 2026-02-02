@@ -9,6 +9,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -149,8 +150,11 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Ionicons name="shield-checkmark" size={64} color={colors.primary} />
-          <Text style={styles.title}>Preventis</Text>
+          <Image
+            source={require('../assets/logo_preventis_lg.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.subtitle}>
             {isLogin ? 'Connectez-vous à votre compte' : 'Créez votre compte'}
           </Text>
@@ -249,6 +253,11 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 48,
+  },
+  logo: {
+    width: 200,
+    height: 60,
+    marginBottom: 16,
   },
   title: {
     fontSize: 32,

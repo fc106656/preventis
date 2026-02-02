@@ -11,18 +11,18 @@ export default function RootLayout() {
   console.log('🔵 _layout.tsx: RootLayout component executing');
   
   try {
-    return (
-      <SafeAreaProvider>
+  return (
+    <SafeAreaProvider>
         <AuthProvider>
-          <DataModeProvider>
+      <DataModeProvider>
             <AlertProvider>
-              <StatusBar style="light" />
+          <StatusBar style="light" />
               <Stack screenOptions={{ headerShown: false }} />
             </AlertProvider>
-          </DataModeProvider>
+      </DataModeProvider>
         </AuthProvider>
-      </SafeAreaProvider>
-    );
+    </SafeAreaProvider>
+  );
   } catch (error) {
     console.error('❌ _layout.tsx: Error in RootLayout:', error);
     throw error;
