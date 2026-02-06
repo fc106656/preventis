@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Pressable,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Image,
 } from 'react-native';
@@ -17,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../src/context/AuthContext';
 import { useDataMode } from '../src/context/DataModeContext';
 import { colors } from '../src/theme/colors';
+import { useAlert } from '../src/components/AlertModal';
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -31,6 +31,7 @@ export default function LoginScreen() {
   const { login, register, isAuthenticated } = useAuth();
   const { isDemo, isInitialized } = useDataMode();
   const router = useRouter();
+  const { showInfo } = useAlert();
 
   // Redirection en mode démo seulement si on est déjà authentifié
   // Sinon, on laisse l'utilisateur se connecter même en mode démo
@@ -55,17 +56,17 @@ export default function LoginScreen() {
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      showInfo('Erreur', 'Veuillez remplir tous les champs');
       return;
     }
 
     if (!isLogin && password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      showInfo('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
 
     if (!isLogin && !secretCode) {
-      Alert.alert('Erreur', 'Le code secret est requis pour l\'inscription');
+      showInfo('Erreur', 'Le code secret est requis pour l\'inscription');
       return;
     }
 
@@ -79,28 +80,12 @@ export default function LoginScreen() {
         const result = await register(email, password, name || undefined, secretCode);
         setApiKey(result.apiKey);
         setShowApiKey(true);
-        Alert.alert(
-          'Compte créé !',
-          'Votre clé API a été générée. Notez-la, elle ne sera plus affichée.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setShowApiKey(false);
-                setIsLogin(true);
-                setEmail('');
-                setPassword('');
-                setName('');
-                setSecretCode('');
-              },
-            },
-          ]
-        );
+        // L'utilisateur verra la clé API dans l'écran dédié, pas besoin d'alerte
       }
     } catch (error: any) {
       console.error('Registration/Login error:', error);
       const errorMessage = error?.message || error?.error || 'Une erreur est survenue';
-      Alert.alert('Erreur', errorMessage);
+      showInfo('Erreur', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -123,7 +108,7 @@ export default function LoginScreen() {
             <Pressable
               style={styles.apiKeyBox}
               onPress={() => {
-                Alert.alert('Info', 'Copiez cette clé et conservez-la en lieu sûr');
+                showInfo('Info', 'Copiez cette clé et conservez-la en lieu sûr');
               }}
             >
               <Text style={styles.apiKeyText} selectable>

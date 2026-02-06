@@ -7,12 +7,12 @@ import {
   Pressable,
   Linking,
   ActivityIndicator,
-  Alert,
   TextInput,
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { colors } from '../../src/theme/colors';
 import { DataModeCard } from '../../src/components/DataModeToggle';
 import { useDataMode } from '../../src/context/DataModeContext';
@@ -20,6 +20,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useApiStatus } from '../../src/hooks/useApiStatus';
 import { API_CONFIG } from '../../src/config/api';
 import { api } from '../../src/services/api';
+import { useAlert } from '../../src/components/AlertModal';
 // Utiliser l'API Clipboard native du navigateur pour le web
 const copyToClipboardNative = async (text: string): Promise<void> => {
   if (typeof window !== 'undefined' && window.navigator?.clipboard) {
@@ -41,8 +42,10 @@ const copyToClipboardNative = async (text: string): Promise<void> => {
 
 export default function SettingsScreen() {
   const { isDemo, isReal } = useDataMode();
-  const { getApiKeys, createApiKey, deleteApiKey, isAuthenticated, apiKey: storedApiKey } = useAuth();
+  const { getApiKeys, createApiKey, deleteApiKey, isAuthenticated, apiKey: storedApiKey, logout, user } = useAuth();
   const apiStatus = useApiStatus();
+  const router = useRouter();
+  const { showConfirm, showInfo } = useAlert();
   const [apiKeys, setApiKeys] = useState<any[]>([]);
   const [loadingApiKeys, setLoadingApiKeys] = useState(false);
   const [showCreateApiKey, setShowCreateApiKey] = useState(false);
@@ -110,42 +113,54 @@ export default function SettingsScreen() {
       setNewApiKeyName('');
       setShowCreateApiKey(false);
       await loadApiKeys();
-      Alert.alert('Clé API créée', result.message);
+      showInfo('Clé API créée', result.message);
     } catch (error: any) {
-      Alert.alert('Erreur', error.message || 'Impossible de créer la clé API');
+      showInfo('Erreur', error.message || 'Impossible de créer la clé API');
     }
   };
 
   const handleDeleteApiKey = async (id: string) => {
-    Alert.alert(
+    showConfirm(
       'Supprimer la clé API',
       'Êtes-vous sûr de vouloir supprimer cette clé ? Elle ne pourra plus être utilisée.',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteApiKey(id);
-              await loadApiKeys();
-              Alert.alert('Succès', 'Clé API supprimée');
-            } catch (error: any) {
-              Alert.alert('Erreur', error.message || 'Impossible de supprimer la clé API');
-            }
-          },
-        },
-      ]
+      async () => {
+        try {
+          await deleteApiKey(id);
+          await loadApiKeys();
+          showInfo('Succès', 'Clé API supprimée');
+        } catch (error: any) {
+          showInfo('Erreur', error.message || 'Impossible de supprimer la clé API');
+        }
+      },
+      'Supprimer',
+      true
     );
   };
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await copyToClipboardNative(text);
-      Alert.alert('Copié', `${label} copié dans le presse-papiers`);
+      showInfo('Copié', `${label} copié dans le presse-papiers`);
     } catch (error) {
-      Alert.alert('Erreur', 'Impossible de copier');
+      showInfo('Erreur', 'Impossible de copier');
     }
+  };
+
+  const handleLogout = async () => {
+    showConfirm(
+      'Déconnexion',
+      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      async () => {
+        try {
+          await logout();
+          router.replace('/login');
+        } catch (error: any) {
+          showInfo('Erreur', error.message || 'Impossible de se déconnecter');
+        }
+      },
+      'Déconnexion',
+      true
+    );
   };
 
 
@@ -240,6 +255,32 @@ export default function SettingsScreen() {
             </View>
           )}
         </View>
+
+        {/* Account Section - Only show if authenticated */}
+        {isAuthenticated && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Compte</Text>
+            <View style={styles.card}>
+              {user && (
+                <InfoRow 
+                  icon="person-circle" 
+                  label="Utilisateur" 
+                  value={user.email || user.name || 'Utilisateur'} 
+                />
+              )}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.logoutButton,
+                  pressed && styles.logoutButtonPressed,
+                ]}
+                onPress={handleLogout}
+              >
+                <Ionicons name="log-out-outline" size={20} color={colors.danger} />
+                <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         {/* App Info */}
         <View style={styles.section}>
@@ -1000,6 +1041,29 @@ const styles = StyleSheet.create({
   },
   buttonTextSecondary: {
     color: colors.textPrimary,
+  },
+  // Logout Button
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginTop: 8,
+    backgroundColor: colors.dangerBg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    gap: 8,
+  },
+  logoutButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
+  },
+  logoutButtonText: {
+    color: colors.danger,
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
 

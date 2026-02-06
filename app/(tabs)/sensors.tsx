@@ -9,10 +9,12 @@ import {
   RefreshControl,
   Modal,
   TextInput,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../src/theme/colors';
+import { colors, shadows } from '../../src/theme/colors';
 import { SensorCard, StatusBadge, useAlert, DeviceHistoryChart } from '../../src/components';
 import { useSensors } from '../../src/hooks/useData';
 import { useDataMode } from '../../src/context/DataModeContext';
@@ -93,6 +95,28 @@ export default function SensorsScreen() {
   const warningSensors = sensors.filter(
     (s) => s.status?.toLowerCase() === 'warning' || s.status?.toLowerCase() === 'alert'
   ).length;
+
+  const getSensorIcon = (type: string) => {
+    switch (type?.toUpperCase()) {
+      case 'SENSOR_CO2':
+      case 'CO2':
+        return 'cloud-outline';
+      case 'SENSOR_INFRARED':
+      case 'INFRARED':
+        return 'eye-outline';
+      case 'SENSOR_SMOKE':
+      case 'SMOKE':
+        return 'flame-outline';
+      case 'SENSOR_TEMPERATURE':
+      case 'TEMPERATURE':
+        return 'thermometer-outline';
+      case 'MODULE_ALARM':
+      case 'ALARM':
+        return 'shield-checkmark-outline';
+      default:
+        return 'hardware-chip-outline';
+    }
+  };
 
   const getSensorTypeLabel = (type: string) => {
     switch (type?.toLowerCase()) {
@@ -226,11 +250,23 @@ export default function SensorsScreen() {
 
       setLoadingHistory(true);
       try {
+        console.log('📊 Chargement historique pour device:', selectedSensor.id, 'période:', historyPeriod);
         const data = await api.devices.getHistory(selectedSensor.id, historyPeriod);
-        setHistoryData(data);
+        console.log('📊 Données historiques reçues:', data?.length || 0, 'points');
+        setHistoryData(data || []);
       } catch (error: any) {
-        console.error('Erreur lors du chargement de l\'historique:', error);
+        console.error('❌ Erreur lors du chargement de l\'historique:', error);
+        console.error('❌ Détails de l\'erreur:', {
+          message: error?.message,
+          stack: error?.stack,
+          deviceId: selectedSensor.id,
+          period: historyPeriod,
+        });
         setHistoryData([]);
+        // Afficher un message d'erreur à l'utilisateur si nécessaire
+        if (error?.message && !error.message.includes('404')) {
+          showInfo('Erreur', `Impossible de charger l'historique: ${error.message}`);
+        }
       } finally {
         setLoadingHistory(false);
       }
@@ -366,95 +402,170 @@ export default function SensorsScreen() {
         {/* Modal de détail */}
         {selectedSensor && (
           <View style={styles.detailOverlay}>
+              {Platform.OS === 'web' && (
+                <style>{`
+                  .preventis-scroll-view {
+                    padding-right: 8px;
+                  }
+                  .preventis-scroll-view::-webkit-scrollbar {
+                    width: 8px;
+                  }
+                  .preventis-scroll-view::-webkit-scrollbar-track {
+                    background: transparent;
+                    margin: 4px 0;
+                  }
+                  .preventis-scroll-view::-webkit-scrollbar-thumb {
+                    background: ${colors.primary}66;
+                    border-radius: 4px;
+                    border: 2px solid transparent;
+                    background-clip: padding-box;
+                  }
+                  .preventis-scroll-view::-webkit-scrollbar-thumb:hover {
+                    background: ${colors.primary}99;
+                    background-clip: padding-box;
+                  }
+                `}</style>
+              )}
             <Pressable
               style={styles.detailBackdrop}
               onPress={() => setSelectedSensor(null)}
             />
             <View style={styles.detailCard}>
               <View style={styles.detailHeader}>
-                <Text style={styles.detailTitle}>{selectedSensor.name}</Text>
-                <Pressable onPress={() => setSelectedSensor(null)}>
-                  <Ionicons name="close" size={24} color={colors.textSecondary} />
+                <View style={styles.detailHeaderLeft}>
+                  <View style={styles.detailIconContainer}>
+                    <Ionicons 
+                      name={getSensorIcon(selectedSensor.type)} 
+                      size={28} 
+                      color={colors.primary} 
+                    />
+                  </View>
+                  <View style={styles.detailTitleContainer}>
+                    <Text style={styles.detailTitle}>{selectedSensor.name}</Text>
+                    <Text style={styles.detailSubtitle}>{getSensorTypeLabel(selectedSensor.type)}</Text>
+                  </View>
+                </View>
+                <Pressable 
+                  onPress={() => setSelectedSensor(null)}
+                  style={styles.closeButton}
+                >
+                  <Ionicons name="close-circle" size={28} color={colors.textSecondary} />
                 </Pressable>
               </View>
 
-              <View style={styles.detailContent}>
-                <DetailRow
-                  label="Type"
-                  value={getSensorTypeLabel(selectedSensor.type)}
-                />
-                <DetailRow label="Localisation" value={selectedSensor.location} />
-                
+              <ScrollView 
+                style={styles.detailScrollView}
+                contentContainerStyle={styles.detailScrollContent}
+                showsVerticalScrollIndicator={true}
+                indicatorStyle="white"
+                {...(Platform.OS === 'web' && { className: 'preventis-scroll-view' })}
+              >
+                {/* Carte principale - Valeur actuelle */}
+                <View style={styles.mainValueCard}>
+                  <View style={styles.mainValueContent}>
+                    <Text style={styles.mainValueLabel}>Valeur actuelle</Text>
+                    <View style={styles.mainValueRow}>
+                      <Text style={styles.mainValue}>
+                        {selectedSensor.value}
+                        <Text style={styles.mainValueUnit}> {selectedSensor.unit || ''}</Text>
+                      </Text>
+                      <StatusBadge status={selectedSensor.status?.toLowerCase() as any} />
+                    </View>
+                  </View>
+                  {selectedSensor.batteryLevel !== undefined && (
+                    <View style={styles.batteryIndicator}>
+                      <Ionicons 
+                        name={selectedSensor.batteryLevel > 20 ? "battery-full" : "battery-dead"} 
+                        size={20} 
+                        color={selectedSensor.batteryLevel > 20 ? colors.success : colors.danger} 
+                      />
+                      <Text style={styles.batteryText}>{selectedSensor.batteryLevel}%</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Informations détaillées en grille */}
+                <View style={styles.infoGrid}>
+                  <View style={styles.infoCard}>
+                    <Ionicons name="location-outline" size={20} color={colors.textSecondary} />
+                    <Text style={styles.infoCardLabel}>Localisation</Text>
+                    <Text style={styles.infoCardValue}>{selectedSensor.location}</Text>
+                  </View>
+                  
+                  <View style={styles.infoCard}>
+                    <Ionicons name="alert-circle-outline" size={20} color={colors.warning} />
+                    <Text style={styles.infoCardLabel}>Seuil d'alerte</Text>
+                    <Text style={styles.infoCardValue}>
+                      {selectedSensor.threshold} {selectedSensor.unit || ''}
+                    </Text>
+                  </View>
+                </View>
+
                 {/* ID du device - copiable */}
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>ID du device</Text>
+                <View style={styles.deviceIdCard}>
+                  <View style={styles.deviceIdHeader}>
+                    <Ionicons name="finger-print-outline" size={18} color={colors.textSecondary} />
+                    <Text style={styles.deviceIdLabel}>ID du device</Text>
+                  </View>
                   <Pressable
                     onPress={() => copyToClipboard(selectedSensor.id, 'ID du device')}
-                    style={styles.idRow}
+                    style={styles.deviceIdRow}
                   >
-                    <Text style={styles.detailId} selectable>
+                    <Text style={styles.deviceId} selectable>
                       {selectedSensor.id}
                     </Text>
-                    <Ionicons name="copy-outline" size={16} color={colors.primary} />
+                    <Ionicons name="copy-outline" size={18} color={colors.primary} />
                   </Pressable>
                 </View>
 
-                <DetailRow
-                  label="Valeur actuelle"
-                  value={`${selectedSensor.value} ${selectedSensor.unit || ''}`}
-                />
-                <DetailRow
-                  label="Seuil d'alerte"
-                  value={`${selectedSensor.threshold} ${selectedSensor.unit || ''}`}
-                />
-                {selectedSensor.batteryLevel !== undefined && (
-                  <DetailRow
-                    label="Batterie"
-                    value={`${selectedSensor.batteryLevel}%`}
-                  />
-                )}
-
-                <View style={styles.detailStatus}>
-                  <Text style={styles.detailStatusLabel}>État</Text>
-                  <StatusBadge status={selectedSensor.status?.toLowerCase() as any} />
-                </View>
-              </View>
-
-              {/* Graphique historique */}
-              {isReal && isAuthenticated && (
-                <View style={styles.historySection}>
-                  <View style={styles.historyHeader}>
-                    <Text style={styles.historyTitle}>Historique des valeurs</Text>
-                    <View style={styles.periodSelector}>
-                      {(['15m', '1h', '6h', '24h', '7d'] as const).map((period) => (
-                        <Pressable
-                          key={period}
-                          onPress={() => setHistoryPeriod(period)}
-                          style={[
-                            styles.periodButton,
-                            historyPeriod === period && styles.periodButtonActive,
-                          ]}
-                        >
-                          <Text
+                {/* Graphique historique */}
+                {isReal && isAuthenticated && (
+                  <View style={styles.historySection}>
+                    <View style={styles.historyHeader}>
+                      <View style={styles.historyTitleContainer}>
+                        <Ionicons name="analytics-outline" size={20} color={colors.primary} />
+                        <Text style={styles.historyTitle}>Historique des valeurs</Text>
+                      </View>
+                      <View style={styles.periodSelector}>
+                        {(['15m', '1h', '6h', '24h', '7d'] as const).map((period) => (
+                          <Pressable
+                            key={period}
+                            onPress={() => setHistoryPeriod(period)}
                             style={[
-                              styles.periodButtonText,
-                              historyPeriod === period && styles.periodButtonTextActive,
+                              styles.periodButton,
+                              historyPeriod === period && styles.periodButtonActive,
                             ]}
                           >
-                            {period === '15m' ? '15m' : period === '1h' ? '1h' : period === '6h' ? '6h' : period === '24h' ? '24h' : '7j'}
-                          </Text>
-                        </Pressable>
-                      ))}
+                            <Text
+                              style={[
+                                styles.periodButtonText,
+                                historyPeriod === period && styles.periodButtonTextActive,
+                              ]}
+                            >
+                              {period === '15m' ? '15m' : period === '1h' ? '1h' : period === '6h' ? '6h' : period === '24h' ? '24h' : '7j'}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
                     </View>
+                    {loadingHistory ? (
+                      <View style={styles.historyLoading}>
+                        <ActivityIndicator size="small" color={colors.primary} />
+                        <Text style={styles.historyLoadingText}>Chargement de l'historique...</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.chartWrapper}>
+                        <DeviceHistoryChart
+                          data={historyData}
+                          unit={selectedSensor.unit || ''}
+                          threshold={selectedSensor.threshold}
+                          period={historyPeriod}
+                        />
+                      </View>
+                    )}
                   </View>
-                  <DeviceHistoryChart
-                    data={historyData}
-                    unit={selectedSensor.unit || ''}
-                    threshold={selectedSensor.threshold}
-                    period={historyPeriod}
-                  />
-                </View>
-              )}
+                )}
+              </ScrollView>
 
               <View style={styles.detailActions}>
                 <Pressable style={styles.actionButton} onPress={refresh}>
@@ -644,14 +755,6 @@ export default function SensorsScreen() {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -965,27 +1068,204 @@ const styles = StyleSheet.create({
   },
   detailCard: {
     backgroundColor: colors.cardBackground,
-    borderRadius: 20,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
+    borderRadius: 24,
+    padding: 0,
+    width: '94%',
+    maxWidth: 600,
+    maxHeight: '90%',
     borderWidth: 1,
     borderColor: colors.cardBorder,
+    overflow: 'hidden',
+    flexDirection: 'column',
+    ...shadows.card,
   },
   detailHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 24,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.cardBorder,
+    backgroundColor: colors.backgroundSecondary,
+  },
+  detailHeaderLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    flex: 1,
+    gap: 12,
+  },
+  detailIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: colors.infoBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary + '40',
+  },
+  detailTitleContainer: {
+    flex: 1,
   },
   detailTitle: {
     color: colors.textPrimary,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
+    marginBottom: 4,
+  },
+  detailSubtitle: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  detailScrollView: {
     flex: 1,
+    maxHeight: '100%',
+  },
+  detailScrollViewWeb: Platform.select({
+    web: {
+      // Style personnalisé pour la barre de défilement sur web
+      // Note: Ces propriétés CSS ne sont pas typées dans React Native
+      // mais fonctionnent sur web via react-native-web
+    } as any,
+    default: {},
+  }),
+  detailScrollContent: {
+    paddingBottom: 20,
+    paddingRight: Platform.OS === 'web' ? 8 : 0, // Espace pour la barre de défilement sur web
+  },
+  detailActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.cardBorder,
   },
   detailContent: {
+    padding: 24,
+    paddingTop: 20,
+  },
+  // Main value card
+  mainValueCard: {
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mainValueContent: {
+    flex: 1,
+  },
+  mainValueLabel: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '500',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  mainValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  mainValue: {
+    color: colors.textPrimary,
+    fontSize: 36,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  mainValueUnit: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: colors.textSecondary,
+  },
+  batteryIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.cardBackground,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  batteryText: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  // Info grid
+  infoGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  infoCard: {
+    flex: 1,
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    gap: 8,
+  },
+  infoCardLabel: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  infoCardValue: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // Device ID card
+  deviceIdCard: {
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  deviceIdHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  deviceIdLabel: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  deviceIdRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.cardBackground,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  deviceId: {
+    flex: 1,
+    color: colors.primary,
+    fontSize: 12,
+    fontFamily: 'monospace',
+    marginRight: 8,
   },
   detailRow: {
     flexDirection: 'row',
@@ -1026,10 +1306,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 14,
   },
-  detailActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
@@ -1047,19 +1323,33 @@ const styles = StyleSheet.create({
   },
   // History section
   historySection: {
-    marginTop: 20,
+    marginTop: 0,
+    padding: 24,
     paddingTop: 20,
     borderTopWidth: 1,
     borderTopColor: colors.cardBorder,
+    backgroundColor: colors.backgroundSecondary,
   },
   historyHeader: {
+    marginBottom: 20,
+  },
+  historyTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 16,
   },
   historyTitle: {
     color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  chartWrapper: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
   },
   periodSelector: {
     flexDirection: 'row',
@@ -1085,6 +1375,16 @@ const styles = StyleSheet.create({
   periodButtonTextActive: {
     color: colors.primary,
     fontWeight: '600',
+  },
+  historyLoading: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+    gap: 12,
+  },
+  historyLoadingText: {
+    color: colors.textMuted,
+    fontSize: 14,
   },
   deleteActionButton: {
     backgroundColor: colors.dangerBg,

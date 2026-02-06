@@ -4,9 +4,13 @@ import Svg, { Polyline, Line, Circle, Text as SvgText, G } from 'react-native-sv
 import { colors } from '../theme/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CHART_WIDTH = SCREEN_WIDTH - 80;
-const CHART_HEIGHT = 200;
-const PADDING = 20;
+// Chart dimensions améliorées pour la modale
+const CHART_WIDTH = Math.min(SCREEN_WIDTH - 120, 520);
+const CHART_HEIGHT = 280;
+const PADDING_TOP = 20;
+const PADDING_BOTTOM = 30;
+const PADDING_LEFT = 50; // Plus d'espace pour les labels Y
+const PADDING_RIGHT = 20;
 
 interface HistoryPoint {
   value: number;
@@ -46,13 +50,13 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
   const chartRange = chartMax - chartMin;
 
   // Dimensions du graphique
-  const graphWidth = CHART_WIDTH - PADDING * 2;
-  const graphHeight = CHART_HEIGHT - PADDING * 2;
+  const graphWidth = CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT;
+  const graphHeight = CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
   // Convertir les données en points SVG
   const points = data.map((point, index) => {
-    const x = PADDING + (index / (data.length - 1 || 1)) * graphWidth;
-    const y = PADDING + graphHeight - ((point.value - chartMin) / chartRange) * graphHeight;
+    const x = PADDING_LEFT + (index / (data.length - 1 || 1)) * graphWidth;
+    const y = PADDING_TOP + graphHeight - ((point.value - chartMin) / chartRange) * graphHeight;
     return { x, y, value: point.value, time: point.createdAt };
   });
 
@@ -78,7 +82,7 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
 
   // Ligne de seuil si défini
   const thresholdY = threshold !== undefined
-    ? PADDING + graphHeight - ((threshold - chartMin) / chartRange) * graphHeight
+    ? PADDING_TOP + graphHeight - ((threshold - chartMin) / chartRange) * graphHeight
     : null;
 
   // Format de la date selon la période
@@ -102,9 +106,9 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
 
   // Labels d'axe Y (valeurs)
   const yLabels = [
-    { value: chartMax, y: PADDING },
-    { value: (chartMin + chartMax) / 2, y: PADDING + graphHeight / 2 },
-    { value: chartMin, y: PADDING + graphHeight },
+    { value: chartMax, y: PADDING_TOP },
+    { value: (chartMin + chartMax) / 2, y: PADDING_TOP + graphHeight / 2 },
+    { value: chartMin, y: PADDING_TOP + graphHeight },
   ];
 
   return (
@@ -115,9 +119,9 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
           {yLabels.map((label, index) => (
             <Line
               key={`grid-${index}`}
-              x1={PADDING}
+              x1={PADDING_LEFT}
               y1={label.y}
-              x2={PADDING + graphWidth}
+              x2={PADDING_LEFT + graphWidth}
               y2={label.y}
               stroke={colors.cardBorder}
               strokeWidth={1}
@@ -127,12 +131,12 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
           ))}
 
           {/* Ligne de seuil */}
-          {thresholdY !== null && thresholdY >= PADDING && thresholdY <= PADDING + graphHeight && (
+          {thresholdY !== null && thresholdY >= PADDING_TOP && thresholdY <= PADDING_TOP + graphHeight && (
             <>
               <Line
-                x1={PADDING}
+                x1={PADDING_LEFT}
                 y1={thresholdY}
-                x2={PADDING + graphWidth}
+                x2={PADDING_LEFT + graphWidth}
                 y2={thresholdY}
                 stroke={colors.warning}
                 strokeWidth={2}
@@ -140,7 +144,7 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
                 opacity={0.6}
               />
               <SvgText
-                x={PADDING + graphWidth - 5}
+                x={PADDING_LEFT + graphWidth - 5}
                 y={thresholdY - 5}
                 fontSize="10"
                 fill={colors.warning}
@@ -151,12 +155,28 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
             </>
           )}
 
+          {/* Zone sous la courbe (gradient) */}
+          <Polyline
+            points={`${PADDING_LEFT},${PADDING_TOP + graphHeight} ${points.map(p => `${p.x},${p.y}`).join(' ')} ${PADDING_LEFT + graphWidth},${PADDING_TOP + graphHeight}`}
+            fill={`url(#gradient)`}
+            fillOpacity={0.15}
+            stroke="none"
+          />
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colors.primary} stopOpacity="0.3" />
+              <stop offset="100%" stopColor={colors.primary} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
           {/* Ligne du graphique */}
           <Polyline
             points={points.map(p => `${p.x},${p.y}`).join(' ')}
             fill="none"
             stroke={colors.primary}
-            strokeWidth={2}
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
 
           {/* Points */}
@@ -166,13 +186,14 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
           {yLabels.map((label, index) => (
             <SvgText
               key={`y-label-${index}`}
-              x={PADDING - 5}
+              x={PADDING_LEFT - 10}
               y={label.y + 4}
-              fontSize="10"
+              fontSize="11"
               fill={colors.textSecondary}
               textAnchor="end"
+              fontWeight="500"
             >
-              {label.value.toFixed(1)}
+              {label.value.toFixed(label.value >= 1000 ? 0 : 1)}
             </SvgText>
           ))}
 
@@ -181,7 +202,7 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
             <SvgText
               key={`x-label-${index}`}
               x={point.x}
-              y={CHART_HEIGHT - 5}
+              y={CHART_HEIGHT - 8}
               fontSize="10"
               fill={colors.textSecondary}
               textAnchor={index === 0 ? 'start' : index === xLabels.length - 1 ? 'end' : 'middle'}
@@ -192,16 +213,16 @@ export function DeviceHistoryChart({ data, unit = '', threshold, period }: Devic
         </Svg>
       </View>
 
-      {/* Légende */}
+      {/* Légende améliorée */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendColor, { backgroundColor: colors.primary }]} />
-          <Text style={styles.legendText}>Valeur</Text>
+          <Text style={styles.legendText}>Valeur mesurée</Text>
         </View>
         {threshold !== undefined && (
           <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: colors.warning, borderStyle: 'dashed', borderWidth: 1, borderColor: colors.warning }]} />
-            <Text style={styles.legendText}>Seuil ({threshold}{unit})</Text>
+            <View style={[styles.legendColor, styles.legendColorDashed, { borderColor: colors.warning }]} />
+            <Text style={styles.legendText}>Seuil d'alerte ({threshold}{unit})</Text>
           </View>
         )}
       </View>
@@ -214,11 +235,11 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   chartContainer: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    backgroundColor: 'transparent',
+    borderRadius: 0,
+    padding: 0,
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   emptyContainer: {
     padding: 32,
@@ -251,9 +272,14 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+  },
+  legendColorDashed: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderStyle: 'dashed',
   },
   legendText: {
     color: colors.textSecondary,

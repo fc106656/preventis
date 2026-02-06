@@ -40,8 +40,27 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   const response = await fetch(apiUrl(endpoint), config);
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
+    let errorMessage = `HTTP ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorData.message || errorMessage;
+      console.error('❌ API Error:', {
+        endpoint,
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
+    } catch (e) {
+      const text = await response.text().catch(() => '');
+      console.error('❌ API Error (non-JSON):', {
+        endpoint,
+        status: response.status,
+        statusText: response.statusText,
+        body: text,
+      });
+      errorMessage = text || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
