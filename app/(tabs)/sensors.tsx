@@ -82,6 +82,26 @@ export default function SensorsScreen() {
     setRefreshing(false);
   };
 
+  // Rafraîchissement automatique de la liste des capteurs toutes les 5 secondes
+  useEffect(() => {
+    if (!isReal || !isAuthenticated) {
+      return;
+    }
+
+    // Rafraîchir immédiatement
+    refresh();
+
+    // Puis rafraîchir automatiquement toutes les 5 secondes
+    const intervalId = setInterval(() => {
+      refresh();
+    }, 5000); // 5 secondes
+
+    return () => {
+      clearInterval(intervalId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReal, isAuthenticated]);
+
   const filteredSensors = filter === 'all'
     ? sensors
     : sensors.filter((s) => s.type?.toLowerCase() === filter);
@@ -248,7 +268,9 @@ export default function SensorsScreen() {
         return;
       }
 
-      setLoadingHistory(true);
+      // Ne pas afficher le loader si c'est un rafraîchissement automatique
+      // pour éviter le clignotement constant
+      setLoadingHistory(false);
       try {
         console.log('📊 Chargement historique pour device:', selectedSensor.id, 'période:', historyPeriod);
         const data = await api.devices.getHistory(selectedSensor.id, historyPeriod);
@@ -262,17 +284,31 @@ export default function SensorsScreen() {
           deviceId: selectedSensor.id,
           period: historyPeriod,
         });
-        setHistoryData([]);
+        // Ne pas vider les données en cas d'erreur pour garder l'affichage précédent
+        // setHistoryData([]);
         // Afficher un message d'erreur à l'utilisateur si nécessaire
         if (error?.message && !error.message.includes('404')) {
-          showInfo('Erreur', `Impossible de charger l'historique: ${error.message}`);
+          // Ne pas afficher l'erreur à chaque rafraîchissement automatique
+          // showInfo('Erreur', `Impossible de charger l'historique: ${error.message}`);
         }
       } finally {
         setLoadingHistory(false);
       }
     };
 
+    // Charger immédiatement
+    setLoadingHistory(true);
     loadHistory();
+
+    // Rafraîchir automatiquement toutes les 5 secondes
+    const intervalId = setInterval(() => {
+      loadHistory();
+    }, 5000); // 5 secondes
+
+    // Nettoyer l'intervalle quand le composant est démonté ou les dépendances changent
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [selectedSensor?.id, historyPeriod, isReal, isAuthenticated]);
 
   return (
