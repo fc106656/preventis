@@ -183,6 +183,24 @@ export const devicesApi = {
     request<any[]>(`/devices/${id}/history?period=${period}`, { requireAuth: true }),
 };
 
+// ============ LOGS ============
+
+export const logsApi = {
+  getAll: (params?: { type?: string; limit?: number; offset?: number; startDate?: string; endDate?: string }) => {
+    const query = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return request<{
+      logs: any[];
+      pagination: { total: number; limit: number; offset: number; hasMore: boolean };
+      stats: { byType: Record<string, number> };
+    }>(`/logs${query}`, { requireAuth: true });
+  },
+  
+  getStats: (params?: { startDate?: string; endDate?: string }) => {
+    const query = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return request<any>(`/logs/stats${query}`, { requireAuth: true });
+  },
+};
+
 // Export groupé
 export const api = {
   sensors: sensorsApi,
@@ -191,6 +209,7 @@ export const api = {
   alarm: alarmApi,
   stats: statsApi,
   devices: devicesApi,
+  logs: logsApi,
 };
 
 export default api;
