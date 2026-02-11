@@ -187,7 +187,12 @@ export const devicesApi = {
 
 export const logsApi = {
   getAll: (params?: { type?: string; limit?: number; offset?: number; startDate?: string; endDate?: string }) => {
-    const query = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    // Filtrer les paramètres undefined pour éviter de les inclure dans l'URL
+    const cleanParams = params ? Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value !== undefined)
+    ) : {};
+    
+    const query = Object.keys(cleanParams).length > 0 ? '?' + new URLSearchParams(cleanParams as any).toString() : '';
     return request<{
       logs: any[];
       pagination: { total: number; limit: number; offset: number; hasMore: boolean };

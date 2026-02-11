@@ -36,9 +36,13 @@ export default function LogsScreen() {
   const fetchLogs = async () => {
     try {
       setError(null);
-      const type = filter === 'all' ? undefined : filter;
+      // Ne pas inclure le paramètre type si on veut tous les logs
+      const params: { limit: number; type?: string } = { limit: 100 };
+      if (filter !== 'all') {
+        params.type = filter;
+      }
       // @ts-ignore - logs API is available at runtime
-      const response = await api.logs.getAll({ limit: 100, type });
+      const response = await api.logs.getAll(params);
       
       setLogs(response.logs);
       setStats(response.stats.byType);
